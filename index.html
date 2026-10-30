@@ -1,0 +1,1345 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="color-scheme" content="light dark">
+<title>AI视频比赛作战台</title>
+<style>
+:root{
+  --paper:#EDF0EB; --sheet:#F8FAF7; --ink:#1C2730; --ink2:#55626A; --rule:#CDD4CF;
+  --tally:#C8233A; --amber:#9A5F0E; --go:#2B7556; --gapbg:#F4E3AE;
+  --slate:#1C2730; --slate-ink:#EDF0EB; --slate-ink2:#9FB0B5; --slate-rule:#34434D;
+  --sans:-apple-system,BlinkMacSystemFont,"PingFang SC","Hiragino Sans GB","Microsoft YaHei","Noto Sans CJK SC","Source Han Sans SC",system-ui,sans-serif;
+  --num:"DIN Alternate","Bahnschrift","DIN 2014","Roboto Condensed",var(--sans);
+}
+@media (prefers-color-scheme:dark){
+  :root:not([data-theme="light"]){
+    --paper:#11171B; --sheet:#182127; --ink:#E3E8E4; --ink2:#93A1A7; --rule:#2B373E;
+    --tally:#FF5A6E; --amber:#E2A541; --go:#55B98F; --gapbg:#4E4218;
+    --slate:#1F2A31; --slate-ink:#E3E8E4; --slate-ink2:#8FA0A6; --slate-rule:#33424B;
+  }
+}
+:root[data-theme="dark"]{
+  --paper:#11171B; --sheet:#182127; --ink:#E3E8E4; --ink2:#93A1A7; --rule:#2B373E;
+  --tally:#FF5A6E; --amber:#E2A541; --go:#55B98F; --gapbg:#4E4218;
+  --slate:#1F2A31; --slate-ink:#E3E8E4; --slate-ink2:#8FA0A6; --slate-rule:#33424B;
+}
+*{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%}
+body{margin:0;background:var(--paper);color:var(--ink);font:15px/1.65 var(--sans)}
+button,input,select,textarea{font:inherit;color:inherit}
+:focus-visible{outline:2px solid var(--ink);outline-offset:2px}
+.slate :focus-visible{outline-color:var(--slate-ink)}
+[hidden]{display:none !important}
+
+/* ---------- layout ---------- */
+.app{display:grid;grid-template-columns:304px minmax(0,1fr);min-height:100vh}
+.slate{position:sticky;top:0;height:100vh;overflow-y:auto;background:var(--slate);color:var(--slate-ink);display:flex;flex-direction:column}
+.stripes{flex:none;height:16px;background:repeating-linear-gradient(-45deg,var(--slate-ink) 0 11px,var(--slate) 11px 22px)}
+.slate-in{padding:20px 22px 24px;display:flex;flex-direction:column;gap:18px;flex:1}
+.main{min-width:0;padding:0 40px 96px}
+.main-in{max-width:820px}
+
+/* ---------- slate ---------- */
+.slate-name{font-size:13px;color:var(--slate-ink2);margin:0}
+.clock-label{font-size:13px;color:var(--slate-ink2);margin:0 0 2px}
+.clock{font-family:var(--num);font-variant-numeric:tabular-nums;font-size:58px;line-height:1;letter-spacing:.01em;margin:0}
+.clock.late{color:var(--tally)}
+.now{margin:10px 0 0;font-size:15px;font-weight:600}
+.next{margin:4px 0 0;font-size:13px;color:var(--slate-ink2)}
+.next b{font-family:var(--num);font-variant-numeric:tabular-nums;font-weight:600;color:var(--slate-ink);font-size:14px}
+.next.hot b{color:var(--tally)}
+.sbtns{display:flex;flex-wrap:wrap;gap:8px}
+.sbtn{border:1px solid var(--slate-ink2);background:transparent;color:var(--slate-ink);border-radius:6px;padding:7px 14px;font-size:14px;cursor:pointer}
+.sbtn:hover{border-color:var(--slate-ink)}
+.sbtn.primary{background:var(--slate-ink);color:var(--slate);border-color:var(--slate-ink);font-weight:600}
+.sbtn.danger{border-color:var(--tally);color:var(--tally)}
+.sbtn.help{border-color:var(--tally);color:var(--slate-ink);background:color-mix(in srgb,var(--tally) 22%,transparent)}
+.calib{display:flex;align-items:center;gap:6px;font-size:13px;color:var(--slate-ink2);white-space:nowrap}
+.calib .sbtn{padding:5px 10px}
+.slate .calib input{width:64px;flex:none;font-size:15px;background:transparent;border:1px solid var(--slate-rule);border-radius:6px;padding:5px 8px;color:var(--slate-ink);font-family:var(--num);font-variant-numeric:tabular-nums}
+.sound{display:flex;align-items:center;gap:8px;font-size:13px;color:var(--slate-ink2);cursor:pointer}
+.phases{list-style:none;margin:0;padding:0;border-top:1px solid var(--slate-rule)}
+.phase{display:grid;grid-template-columns:4px 1fr auto;gap:0 12px;padding:9px 0;border-bottom:1px solid var(--slate-rule);cursor:pointer;align-items:start}
+.phase:hover .ph-name{text-decoration:underline}
+.ph-bar{grid-row:1/3;align-self:stretch;border-radius:2px;background:var(--slate-rule)}
+.ph-name{font-size:14px;font-weight:600}
+.ph-time{font-family:var(--num);font-variant-numeric:tabular-nums;font-size:13px;color:var(--slate-ink2)}
+.ph-out{grid-column:2/4;font-size:12.5px;color:var(--slate-ink2)}
+.phase.on .ph-bar{background:var(--slate-ink)}
+.phase.done{opacity:.45}
+.deadlines{margin:0;font-size:12.5px;color:var(--slate-ink2)}
+.deadlines b{color:var(--tally);font-weight:600}
+.slate-foot{margin-top:auto;font-size:12px;color:var(--slate-ink2)}
+.slate-more{display:contents}
+.m-only{display:none}
+
+/* ---------- nav ---------- */
+.steps{position:sticky;top:0;z-index:5;background:var(--paper);display:flex;gap:4px;overflow-x:auto;padding:18px 0 0;border-bottom:1px solid var(--rule);scrollbar-width:none}
+.steps::-webkit-scrollbar{display:none}
+.step-btn{flex:none;display:flex;align-items:baseline;gap:7px;border:0;background:transparent;padding:8px 12px 11px;cursor:pointer;color:var(--ink2);border-bottom:2px solid transparent;margin-bottom:-1px;font-size:14.5px}
+.step-btn .n{font-family:var(--num);font-variant-numeric:tabular-nums;font-size:13px}
+.step-btn[aria-current="step"]{color:var(--ink);border-bottom-color:var(--ink);font-weight:600}
+.step-btn:hover{color:var(--ink)}
+
+/* ---------- content ---------- */
+.alert{margin:16px 0 0;display:flex;align-items:center;gap:14px;justify-content:space-between;background:var(--ink);color:var(--paper);border-radius:6px;padding:12px 16px}
+.alert.hard{background:var(--tally);color:#fff}
+.alert p{margin:0;font-weight:600}
+.alert button{flex:none;border:1px solid currentColor;background:transparent;color:inherit;border-radius:6px;padding:5px 12px;cursor:pointer}
+section.step{padding-top:26px}
+h2{font-size:26px;line-height:1.3;margin:0 0 6px;font-weight:700;letter-spacing:.01em}
+h3{font-size:17px;margin:30px 0 8px;font-weight:700}
+.lead{margin:0 0 8px;color:var(--ink2);max-width:40em}
+p{margin:8px 0}
+.muted{color:var(--ink2)}
+.small{font-size:13px}
+
+.field{display:block;margin:18px 0}
+.field>.lbl{display:block;font-weight:600;font-size:14.5px;margin-bottom:6px}
+.field>.hint{display:block;color:var(--ink2);font-size:13px;margin-top:5px}
+input[type=text],input[type=number],textarea,select{width:100%;background:var(--sheet);border:1px solid var(--rule);border-radius:6px;padding:9px 11px;font-size:15px;line-height:1.55}
+textarea{resize:vertical;min-height:72px}
+input:focus,textarea:focus,select:focus{outline:2px solid var(--ink);outline-offset:0;border-color:var(--ink)}
+.theme-input{font-size:22px !important;font-weight:600;padding:12px 14px !important}
+.row{display:flex;flex-wrap:wrap;gap:10px;align-items:center}
+.row>input[type=number]{width:110px}
+.chip{border:1px solid var(--rule);background:var(--sheet);border-radius:999px;padding:4px 12px;font-size:13.5px;cursor:pointer;color:var(--ink)}
+.chip:hover{border-color:var(--ink)}
+.seg{display:inline-flex;border:1px solid var(--rule);border-radius:6px;overflow:hidden;background:var(--sheet)}
+.seg label{position:relative;cursor:pointer}
+.seg input{position:absolute;opacity:0;pointer-events:none}
+.seg span{display:block;padding:7px 16px;font-family:var(--num);font-variant-numeric:tabular-nums;border-right:1px solid var(--rule)}
+.seg label:last-child span{border-right:0}
+.seg input:checked+span{background:var(--ink);color:var(--paper)}
+.seg input:focus-visible+span{outline:2px solid var(--ink);outline-offset:-3px}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:0 18px}
+
+.tpls{display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:10px;margin-top:4px}
+.tpl{position:relative;display:block;border:1px solid var(--rule);background:var(--sheet);border-radius:6px;padding:11px 13px;cursor:pointer}
+.tpl input{position:absolute;opacity:0;pointer-events:none}
+.tpl .tn{display:block;font-weight:600}
+.tpl .ts{display:block;font-size:13.5px;margin-top:2px}
+.tpl .tf{display:block;font-size:12.5px;color:var(--ink2);margin-top:4px}
+.tpl:has(input:checked){border:2px solid var(--ink);padding:10px 12px}
+.tpl:has(input:focus-visible){outline:2px solid var(--ink);outline-offset:2px}
+.tag{display:inline-block;font-size:11.5px;font-weight:600;color:var(--go);border:1px solid var(--go);border-radius:4px;padding:0 5px;margin-left:6px;vertical-align:1px}
+
+/* prompt blocks */
+.prompt{background:var(--sheet);border:1px solid var(--rule);border-left:3px solid var(--ink);border-radius:4px;margin:14px 0}
+.prompt-head{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:9px 12px 9px 14px;border-bottom:1px solid var(--rule)}
+.prompt-title{font-weight:700;font-size:15px}
+.prompt-title small{font-weight:400;color:var(--ink2);font-size:13px;margin-left:8px}
+.prompt-body{padding:12px 14px;white-space:pre-wrap;word-break:break-word;font-size:14.5px;line-height:1.8}
+.gap{background:var(--gapbg);border-radius:3px;padding:1px 5px;font-weight:600}
+.prompt-foot{padding:0 14px 11px;color:var(--amber);font-size:13px}
+.btn{border:1px solid var(--ink);background:transparent;color:var(--ink);border-radius:6px;padding:6px 14px;font-size:14px;cursor:pointer;white-space:nowrap}
+.btn:hover{background:color-mix(in srgb,var(--ink) 8%,transparent)}
+.btn.primary{background:var(--ink);color:var(--paper)}
+.btn.primary:hover{background:color-mix(in srgb,var(--ink) 86%,var(--paper))}
+.btn.done{border-color:var(--go);color:var(--go);background:transparent}
+.btn.primary.done{background:var(--go);border-color:var(--go);color:#fff}
+.btn.ghost{border-color:var(--rule)}
+.btn.warn{border-color:var(--tally);color:var(--tally)}
+.btn.sm{padding:3px 10px;font-size:13px}
+.next-row{display:flex;justify-content:space-between;gap:12px;margin-top:36px;padding-top:18px;border-top:1px solid var(--rule)}
+
+.criteria{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:1px;background:var(--rule);border:1px solid var(--rule);border-radius:6px;overflow:hidden;margin:14px 0}
+.criteria div{background:var(--sheet);padding:10px 12px}
+.criteria b{display:block;font-size:14px}
+.criteria span{font-size:13px;color:var(--ink2)}
+
+details.fold{border:1px solid var(--rule);border-radius:6px;background:var(--sheet);margin:14px 0}
+details.fold>summary{cursor:pointer;padding:10px 14px;font-weight:600;list-style-position:inside}
+details.fold>.fold-in{padding:0 14px 12px}
+details.fold .prompt{margin:4px 0 6px}
+.rules{margin:4px 0 0;padding-left:20px}
+.rules li{margin:5px 0}
+.formula{white-space:pre-wrap;background:var(--paper);border-radius:4px;padding:10px 12px;font-size:14px;line-height:1.8;margin:8px 0}
+
+/* checklists */
+.checks{list-style:none;margin:8px 0;padding:0;border-top:1px solid var(--rule)}
+.checks li{border-bottom:1px solid var(--rule)}
+.checks label{display:flex;gap:12px;align-items:flex-start;padding:10px 2px;cursor:pointer}
+.checks input{margin-top:5px;width:17px;height:17px;flex:none;accent-color:var(--ink)}
+.checks input:checked+span{color:var(--ink2);text-decoration:line-through;text-decoration-color:var(--rule)}
+.progress{font-size:13px;color:var(--ink2);font-family:var(--num);font-variant-numeric:tabular-nums}
+.check-head{display:flex;align-items:baseline;justify-content:space-between;gap:12px}
+.check-head h3{margin-bottom:0}
+
+/* shots */
+.shot-bar{position:sticky;top:57px;z-index:4;background:var(--paper);display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:10px;padding:10px 0;border-bottom:1px solid var(--rule);margin-top:18px}
+.tot{font-size:14px}
+.tot b{font-family:var(--num);font-variant-numeric:tabular-nums;font-size:16px}
+.tot .ok{color:var(--go)}
+.tot .off{color:var(--amber)}
+.shot{background:var(--sheet);border:1px solid var(--rule);border-left:4px solid var(--rule);border-radius:4px;margin:16px 0}
+.shot[data-status="sent"]{border-left-color:var(--amber)}
+.shot[data-status="ok"]{border-left-color:var(--go)}
+.shot[data-status="drop"]{opacity:.55}
+.shot-head{display:flex;flex-wrap:wrap;align-items:center;gap:10px;padding:10px 12px 10px 14px;border-bottom:1px solid var(--rule)}
+.shot-no{font-weight:700;font-size:16px;margin-right:4px}
+.shot-head select{width:auto;padding:4px 8px;font-size:13.5px}
+.shot-head .dur{display:flex;align-items:center;gap:4px;font-size:13.5px;color:var(--ink2)}
+.shot-head .dur input{width:58px;padding:4px 6px;font-size:14px;font-family:var(--num);font-variant-numeric:tabular-nums}
+.tries{font-size:13px;color:var(--ink2);display:flex;align-items:center;gap:6px}
+.tries b{font-family:var(--num);font-variant-numeric:tabular-nums;color:var(--ink)}
+.tries.hot b{color:var(--tally)}
+.shot-tools{margin-left:auto;display:flex;gap:4px}
+.icon{border:1px solid transparent;background:transparent;border-radius:5px;padding:3px 8px;font-size:13px;color:var(--ink2);cursor:pointer}
+.icon:hover{border-color:var(--rule);color:var(--ink)}
+.icon.arm{color:var(--tally);border-color:var(--tally)}
+.shot-body{padding:4px 14px 12px}
+.shot-body .field{margin:12px 0}
+.shot-body .lbl{display:flex !important;align-items:center;justify-content:space-between;gap:8px}
+.inline-check{font-weight:400;font-size:13px;color:var(--ink2);display:inline-flex;align-items:center;gap:5px;cursor:pointer}
+.inline-check input{accent-color:var(--ink)}
+.refs{display:flex;flex-wrap:wrap;gap:6px 18px;margin:10px 0 4px}
+.segs .seg-row{display:grid;grid-template-columns:92px 1fr;gap:8px;align-items:center;margin:6px 0}
+.segs .seg-row span{font-family:var(--num);font-variant-numeric:tabular-nums;font-size:13.5px;color:var(--ink2)}
+.shot .prompt{margin:12px 0 0;border-left-width:1px}
+.shot .prompt-body{background:var(--paper);border-radius:0 0 4px 4px}
+.count{font-family:var(--num);font-variant-numeric:tabular-nums;font-size:13px;color:var(--ink2);font-weight:400}
+.count.over{color:var(--tally)}
+.lints{list-style:none;margin:10px 0 0;padding:0}
+.lints li{font-size:13.5px;padding:3px 0 3px 18px;position:relative;color:var(--amber)}
+.lints li::before{content:"";position:absolute;left:3px;top:11px;width:7px;height:7px;border-radius:50%;background:currentColor}
+.lints li.bad{color:var(--tally)}
+.lints li.good{color:var(--go)}
+.import-msg{font-size:13.5px;margin:6px 0 0}
+.import-msg.err{color:var(--tally)}
+.import-msg.ok{color:var(--go)}
+.add-row{display:flex;flex-wrap:wrap;gap:10px;margin-top:6px}
+
+/* help dialog */
+dialog.help{border:0;padding:0;max-width:720px;width:calc(100% - 32px);max-height:calc(100vh - 48px);border-radius:8px;background:var(--sheet);color:var(--ink);box-shadow:0 18px 60px rgba(10,20,25,.35)}
+dialog.help::backdrop{background:rgba(12,18,22,.55)}
+.help-head{position:sticky;top:0;background:var(--sheet);display:flex;justify-content:space-between;align-items:center;gap:12px;padding:16px 20px;border-bottom:1px solid var(--rule)}
+.help-head h2{font-size:20px;margin:0}
+.help-in{padding:6px 20px 20px}
+.fix{border-bottom:1px solid var(--rule);padding:11px 0}
+.fix b{display:block}
+.fix .sym{color:var(--ink2);font-size:13.5px}
+.fix .act{margin-top:3px}
+
+.foot{margin-top:40px;font-size:12.5px;color:var(--ink2)}
+
+/* ---------- mobile ---------- */
+@media (max-width:959px){
+  .app{grid-template-columns:1fr}
+  .slate{height:auto;max-height:100vh;z-index:20}
+  .stripes{height:7px}
+  .slate-in{padding:10px 16px 12px;gap:10px}
+  .slate-top{display:grid;grid-template-columns:auto 1fr;gap:2px 14px;align-items:center}
+  .clock-label,.slate-name,.slate-foot{display:none}
+  .clock-wrap{grid-row:1/3}
+  .clock{font-size:34px}
+  .now{margin:0;font-size:14px;line-height:1.35}
+  .next{margin:0;font-size:12.5px;line-height:1.35}
+  .m-only{display:inline-block}
+  .slate-more{display:none}
+  .slate.open .slate-more{display:flex;flex-direction:column;gap:14px;padding-top:6px}
+  .sbtn{padding:5px 11px;font-size:13.5px}
+  .main{padding:0 16px 80px}
+  .steps{position:static;padding-top:10px}
+  .step-btn{padding:8px 10px 10px}
+  h2{font-size:22px}
+  .grid2{grid-template-columns:1fr}
+  .criteria{grid-template-columns:1fr}
+  .shot-bar{position:static}
+  .theme-input{font-size:19px !important}
+  .segs .seg-row{grid-template-columns:1fr;gap:3px}
+}
+@media (prefers-reduced-motion:reduce){*{scroll-behavior:auto !important}}
+</style>
+</head>
+<body>
+<div class="app">
+
+<!-- ================= SLATE / TIMER ================= -->
+<aside class="slate" id="slate" aria-label="比赛计时">
+  <div class="stripes" aria-hidden="true"></div>
+  <div class="slate-in">
+    <p class="slate-name">AI视频比赛作战台</p>
+    <div class="slate-top">
+      <div class="clock-wrap">
+        <p class="clock-label" id="clockLabel">比赛时长</p>
+        <p class="clock" id="clock" aria-live="off">2:00:00</p>
+      </div>
+      <p class="now" id="nowPhase">未开始计时</p>
+      <p class="next" id="nextNode">主题公布时点“开始计时”</p>
+    </div>
+    <div class="sbtns">
+      <button class="sbtn primary" id="startBtn" type="button">开始计时</button>
+      <button class="sbtn m-only" id="moreBtn" type="button" aria-expanded="false" aria-controls="slateMore">阶段</button>
+      <button class="sbtn help" id="helpBtn" type="button">出问题了</button>
+    </div>
+    <div class="slate-more" id="slateMore">
+      <div class="calib">
+        <label for="calibIn">比赛已进行</label>
+        <input id="calibIn" type="number" min="0" max="600" inputmode="numeric" placeholder="0">
+        <span>分钟</span>
+        <button class="sbtn" id="calibBtn" type="button">校准</button>
+      </div>
+      <div class="sbtns">
+        <label class="sound"><input type="checkbox" id="soundOn" checked> 到节点时响提示音</label>
+      </div>
+      <ol class="phases" id="phases"></ol>
+      <p class="deadlines" id="deadlines"></p>
+      <div class="sbtns"><button class="sbtn danger" id="resetTimer" type="button">重置计时</button></div>
+      <p class="slate-foot">点阶段名可跳到对应步骤。内容只保存在这台设备的浏览器里。</p>
+    </div>
+  </div>
+</aside>
+
+<!-- ================= MAIN ================= -->
+<main class="main">
+<div class="main-in">
+  <nav class="steps" aria-label="步骤" id="stepsNav">
+    <button class="step-btn" data-go="1" type="button"><span class="n">1</span>设定</button>
+    <button class="step-btn" data-go="2" type="button"><span class="n">2</span>出创意</button>
+    <button class="step-btn" data-go="3" type="button"><span class="n">3</span>脚本分镜</button>
+    <button class="step-btn" data-go="4" type="button"><span class="n">4</span>镜头工坊</button>
+    <button class="step-btn" data-go="5" type="button"><span class="n">5</span>剪辑包装</button>
+    <button class="step-btn" data-go="6" type="button"><span class="n">6</span>自检提交</button>
+  </nav>
+
+  <div class="alert" id="alert" role="alert" hidden>
+    <p id="alertText"></p>
+    <button type="button" id="alertOk">知道了</button>
+  </div>
+
+  <!-- STEP 1 -->
+  <section class="step" data-step="1" aria-labelledby="h1s">
+    <h2 id="h1s">主题公布后先填这里</h2>
+    <p class="lead">后面所有提示词都会自动带上这里的信息。主题一公布就点“开始计时”。</p>
+
+    <label class="field">
+      <span class="lbl">比赛主题</span>
+      <input type="text" class="theme-input" data-bind="theme" placeholder="例如：光" autocomplete="off">
+    </label>
+
+    <div class="field">
+      <span class="lbl">成片时长（秒）</span>
+      <div class="row">
+        <input type="number" data-bind="dur" min="10" max="600" inputmode="numeric" aria-label="成片时长（秒）">
+        <button class="chip" type="button" data-dur="30">30秒</button>
+        <button class="chip" type="button" data-dur="60">60秒</button>
+        <button class="chip" type="button" data-dur="90">90秒</button>
+        <button class="chip" type="button" data-dur="120">120秒</button>
+      </div>
+      <span class="hint">按比赛要求填。没有要求时，60秒最稳。</span>
+    </div>
+
+    <div class="grid2">
+      <div class="field">
+        <span class="lbl">画幅</span>
+        <div class="seg" role="radiogroup" aria-label="画幅">
+          <label><input type="radio" name="aspect" value="16:9" data-bind="aspect"><span>16:9</span></label>
+          <label><input type="radio" name="aspect" value="9:16" data-bind="aspect"><span>9:16</span></label>
+          <label><input type="radio" name="aspect" value="1:1" data-bind="aspect"><span>1:1</span></label>
+        </div>
+      </div>
+      <label class="field">
+        <span class="lbl">比赛总时长（分钟）</span>
+        <input type="number" data-bind="total" min="30" max="480" inputmode="numeric">
+        <span class="hint">计时器按这个时长分配各阶段。</span>
+      </label>
+    </div>
+
+    <label class="field">
+      <span class="lbl">你熟悉的领域（可选）</span>
+      <input type="text" data-bind="domain" placeholder="例如：消费品行业、上市公司调研" autocomplete="off">
+      <span class="hint">填了之后，AI 会从这个领域切入几个创意，内容更有深度。</span>
+    </label>
+
+    <div class="field">
+      <span class="lbl">叙事模板</span>
+      <div class="tpls" id="tpls"></div>
+      <span class="hint">不确定就选“旁白驱动”：故事靠旁白讲，画面只管氛围，不依赖人物前后一致。</span>
+    </div>
+
+    <div class="check-head"><h3>开赛先确认</h3><span class="progress" data-progress="pre"></span></div>
+    <ul class="checks" data-checks="pre"></ul>
+
+    <div class="next-row"><span></span><button class="btn primary" type="button" data-go="2">下一步：出创意</button></div>
+  </section>
+
+  <!-- STEP 2 -->
+  <section class="step" data-step="2" aria-labelledby="h2s" hidden>
+    <h2 id="h2s">15分钟定方案</h2>
+    <p class="lead">复制卡片 A 给文字AI出10个创意，挑一个，再用卡片 B 让它挑刺。到第15分钟定下一句话故事，之后不再换方向。</p>
+
+    <div data-card="A"></div>
+
+    <div class="criteria" aria-label="选创意的四条标准">
+      <div><b>契合主题</b><span>评委看完能立刻说出它和主题的关系吗？</span></div>
+      <div><b>AI 做得出</b><span>画面以单人、单一动作、氛围镜头为主吗？</span></div>
+      <div><b>有记忆点</b><span>有没有一个情绪转折、反转或金句？</span></div>
+      <div><b>能展示AI</b><span>能用上参考图、多镜头、音画同步吗？</span></div>
+    </div>
+
+    <label class="field">
+      <span class="lbl">选中的创意</span>
+      <textarea data-bind="idea" rows="3" placeholder="把AI给出的、你最想做的那一个创意粘贴到这里"></textarea>
+    </label>
+
+    <div data-card="B"></div>
+
+    <label class="field">
+      <span class="lbl">一句话故事</span>
+      <textarea data-bind="story" rows="2" placeholder="粘贴卡片 B 给出的改进版，或自己写一句"></textarea>
+      <span class="hint">这句话会自动进入后面所有卡片。</span>
+    </label>
+
+    <div class="next-row"><button class="btn ghost" type="button" data-go="1">上一步</button><button class="btn primary" type="button" data-go="3">下一步：脚本分镜</button></div>
+  </section>
+
+  <!-- STEP 3 -->
+  <section class="step" data-step="3" aria-labelledby="h3s" hidden>
+    <h2 id="h3s">定主角和风格，再出脚本分镜</h2>
+    <p class="lead">卡片按顺序复制给文字AI。卡片 C 的结果填进下面两个框，之后每个镜头都会原样带上。</p>
+
+    <div data-card="C"></div>
+
+    <label class="field">
+      <span class="lbl">主角设定</span>
+      <textarea data-bind="protagonist" rows="2" placeholder="例如：二十多岁的女孩，齐肩短发，红色雨衣，背一个旧帆布包"></textarea>
+      <span class="hint">50字以内。没有固定主角（比如全是意象镜头）可以留空。</span>
+    </label>
+    <label class="field">
+      <span class="lbl">统一风格</span>
+      <input type="text" data-bind="style" list="styleList" placeholder="例如：写实电影感，暖黄与冷蓝对比" autocomplete="off">
+      <span class="hint">20字以内，可以直接从下拉建议里选。</span>
+    </label>
+    <datalist id="styleList">
+      <option value="写实电影感，自然光"></option>
+      <option value="胶片质感，暖黄与冷蓝对比"></option>
+      <option value="纪录片质感，手持自然光"></option>
+      <option value="水彩插画风，柔和色彩"></option>
+      <option value="3D动画风，明亮饱和"></option>
+      <option value="黑白电影，高反差光影"></option>
+      <option value="霓虹夜色，冷暖强对比"></option>
+      <option value="极简留白，低饱和"></option>
+    </datalist>
+
+    <details class="fold">
+      <summary>现场有图片生成工具时：先生成主角参考图</summary>
+      <div class="fold-in">
+        <p class="small muted">用图片工具生成后保存，之后在视频平台作为 @图片1 上传。没有图片工具就跳过，改用第4步的锚点镜头保证一致。</p>
+        <div data-card="C2"></div>
+      </div>
+    </details>
+
+    <div data-card="D"></div>
+    <div data-card="E"></div>
+    <div data-card="F"></div>
+    <div data-card="G"></div>
+
+    <div class="next-row"><button class="btn ghost" type="button" data-go="2">上一步</button><button class="btn primary" type="button" data-go="4">下一步：镜头工坊</button></div>
+  </section>
+
+  <!-- STEP 4 -->
+  <section class="step" data-step="4" aria-labelledby="h4s" hidden>
+    <h2 id="h4s">镜头工坊</h2>
+    <p class="lead">把卡片 E 或 F 的输出整段粘贴进来，自动拆成镜头；每个镜头实时检查常见问题，可逐条复制到视频平台。</p>
+
+    <details class="fold">
+      <summary>镜头提示词规则速查</summary>
+      <div class="fold-in">
+        <div class="formula">【主体】谁或什么，1到2个具体特征
+【动作】一条连贯动作，写出物理结果
+【场景】地点加光线，一句话
+【运镜】只写一种运镜，写明终点
+【风格/音频】视觉基调；点名具体声音；写“无配乐”</div>
+        <ol class="rules">
+          <li><b>短。</b>100字以内，最重要的放前面。</li>
+          <li><b>动词比形容词值钱。</b>不写“绝美、史诗级”，写“停步，呼出一口白气”。</li>
+          <li><b>一个镜头一种运镜。</b>要两种就拆成两个镜头。</li>
+          <li><b>声音必须写。</b>不写，模型会随机配乐。</li>
+          <li><b>超过8秒写时间轴。</b>按秒分三段写。</li>
+          <li><b>每次只改一个变量。</b>只改动作，或只改运镜，再对比。</li>
+        </ol>
+        <p class="small muted">锚点镜头法：先只生成一个镜头，把主角、服装、色调调对；之后的镜头都勾选“@视频1 锚点镜头”，并上传这个镜头。参考强度如果可调，保持在70%到80%。</p>
+      </div>
+    </details>
+
+    <label class="field">
+      <span class="lbl">粘贴AI输出的镜头提示词</span>
+      <textarea id="importBox" rows="5" placeholder="整段粘贴，包含【主体】【动作】【场景】【运镜】【风格/音频】标签即可，分镜表部分不用删"></textarea>
+    </label>
+    <div class="add-row">
+      <button class="btn primary" type="button" id="importBtn">拆成镜头</button>
+      <button class="btn ghost" type="button" id="importClear">清空粘贴框</button>
+    </div>
+    <p class="import-msg" id="importMsg" aria-live="polite"></p>
+
+    <div class="shot-bar">
+      <span class="tot" id="totals"></span>
+      <button class="btn" type="button" id="copyAllShots">复制全部镜头</button>
+    </div>
+    <div id="shots"></div>
+    <div class="add-row">
+      <button class="btn" type="button" id="addShot">添加镜头</button>
+    </div>
+
+    <div class="next-row"><button class="btn ghost" type="button" data-go="3">上一步</button><button class="btn primary" type="button" data-go="5">下一步：剪辑包装</button></div>
+  </section>
+
+  <!-- STEP 5 -->
+  <section class="step" data-step="5" aria-labelledby="h5s" hidden>
+    <h2 id="h5s">剪辑和包装</h2>
+    <p class="lead">生成排队时就开始粗剪。现场的剪辑软件不一定是剪映，下面只用到所有剪辑软件都有的操作。</p>
+
+    <div class="check-head"><h3>剪辑清单</h3><span class="progress" data-progress="edit"></span></div>
+    <ul class="checks" data-checks="edit"></ul>
+
+    <h3>有配音工具时</h3>
+    <div data-card="H"></div>
+
+    <p class="small muted">离线软件没有音乐库时：让视频平台生成一段只有配乐的空镜头，剪辑时只取它的音频。</p>
+
+    <div class="next-row"><button class="btn ghost" type="button" data-go="4">上一步</button><button class="btn primary" type="button" data-go="6">下一步：自检提交</button></div>
+  </section>
+
+  <!-- STEP 6 -->
+  <section class="step" data-step="6" aria-labelledby="h6s" hidden>
+    <h2 id="h6s">提交前逐项打勾</h2>
+    <p class="lead">提交前10分钟过一遍。任何一项不过，先修它，不加新内容。</p>
+
+    <div class="check-head"><h3>故事</h3><span class="progress" data-progress="q1"></span></div>
+    <ul class="checks" data-checks="q1"></ul>
+    <div class="check-head"><h3>画面和声音</h3><span class="progress" data-progress="q2"></span></div>
+    <ul class="checks" data-checks="q2"></ul>
+    <div class="check-head"><h3>AI 使用</h3><span class="progress" data-progress="q3"></span></div>
+    <ul class="checks" data-checks="q3"></ul>
+    <div class="check-head"><h3>交付</h3><span class="progress" data-progress="q4"></span></div>
+    <ul class="checks" data-checks="q4"></ul>
+
+    <h3>导出全部内容</h3>
+    <p class="muted small">包括设定、故事、主角、风格和全部镜头提示词，方便赛后复盘或换设备继续。</p>
+    <div class="add-row">
+      <button class="btn primary" type="button" id="copyExport">复制全部内容</button>
+      <button class="btn" type="button" id="downloadExport">下载为文本文件</button>
+    </div>
+
+    <h3>重新开始</h3>
+    <p class="muted small">清空这台设备上保存的所有内容，包括计时。</p>
+    <button class="btn warn" type="button" id="resetAll">清空全部内容</button>
+
+    <div class="next-row"><button class="btn ghost" type="button" data-go="5">上一步</button><span></span></div>
+  </section>
+
+  <p class="foot">内容自动保存在这台设备的浏览器里，不上传任何地方。断网也能用：把这个页面另存为文件即可离线打开。</p>
+</div>
+</main>
+</div>
+
+<!-- ================= HELP DIALOG ================= -->
+<dialog class="help" id="help" aria-labelledby="helpTitle">
+  <div class="help-head">
+    <h2 id="helpTitle">出问题了，这样处理</h2>
+    <button class="btn" type="button" id="helpClose">关闭</button>
+  </div>
+  <div class="help-in">
+    <p><b>总原则：</b>一个镜头试3次仍不行就换镜头，不要死磕；时间不够就砍镜头数量，不降成片质量。</p>
+    <div id="fixes"></div>
+  </div>
+</dialog>
+
+<script>
+(() => {
+'use strict';
+
+/* ================= data ================= */
+const KEY = 'aivk-v1';
+const TPL = {
+  pangbai: {n:'旁白驱动', s:'一段第一人称独白，画面全用意象镜头', f:'完成度最稳，适合首次参赛', rec:true},
+  wujian:  {n:'物件的旅程', s:'以一个物件为主角，串起不同场景', f:'任何主题；不需要人物前后一致'},
+  wenti:   {n:'问题到解决', s:'困境，转折，找到办法，结果', f:'科技、效率、创新类主题'},
+  duibi:   {n:'前后对比', s:'同一场景的过去和现在，或之前和之后', f:'变化、成长、时代类主题'},
+  fanzhuan:{n:'反转结局', s:'前段铺垫一种理解，最后一镜翻转', f:'想拿创意分时'},
+  '':      {n:'交给AI选', s:'不限定结构，让AI按创意自己选', f:'还没想法时'}
+};
+const CHECKS = {
+  pre: [
+    ['p1','文字AI是哪个，能否联网'],
+    ['p2','视频生成平台是哪个，单段最长几秒，能否上传参考图'],
+    ['p3','有没有图片生成和配音工具'],
+    ['p4','成片时长、画幅、格式和提交方式'],
+    ['p5','剪辑软件能打开，找到导入和导出按钮']
+  ],
+  edit: [
+    ['e1','开场摸一遍剪辑软件：导入、裁剪、加音频、加字幕、导出'],
+    ['e2','确认导出设置：分辨率、帧率、格式（通常是 MP4）'],
+    ['e3','素材即生成即下载，统一命名为“镜号_版本”，如 S03_v2'],
+    ['e4','生成排队时开始粗剪，按分镜顺序摆上时间线'],
+    ['e5','每个镜头掐头去尾，只留最好的几秒'],
+    ['e6','整片只用一首配乐，剪辑点尽量卡在节拍上'],
+    ['e7','各镜头自带的音乐静音，只保留需要的环境音'],
+    ['e8','旁白放在最上层，音量盖过配乐'],
+    ['e9','片头标题、旁白字幕、片尾作品名全部在剪辑里加'],
+    ['e10','片尾放提示词截图或迭代对比（规则允许时，10秒以内）'],
+    ['e11','每完成一个阶段，导出一个低清预览版防丢']
+  ],
+  q1: [
+    ['q1a','前3秒有钩子：一个反常画面或一个问题'],
+    ['q1b','一句话能说清片子讲什么，并且紧扣主题'],
+    ['q1c','有一个情绪转折、反转或金句'],
+    ['q1d','结尾有落点，并呼应开头']
+  ],
+  q2: [
+    ['q2a','主角和画面风格前后一致'],
+    ['q2b','整片一首配乐，没有突兀的自带音乐'],
+    ['q2c','旁白清晰，音量盖过配乐'],
+    ['q2d','字幕和标题没有错别字']
+  ],
+  q3: [
+    ['q3a','能看出用了参考图、多镜头或音画同步，而不只是“一句话生成”'],
+    ['q3b','片尾有提示词或迭代对比展示（规则允许时）']
+  ],
+  q4: [
+    ['q4a','时长、格式、分辨率符合比赛要求'],
+    ['q4b','导出后完整播放一遍：无黑帧、音画同步、结尾没被截断']
+  ]
+};
+const FIXES = [
+  ['平台不是 Seedance','参数、界面不同','先用一个镜头试生成，确认单段时长和参考图用法；五段式公式照用'],
+  ['生成排队慢','一条要等很久','一次提交多个镜头；等待时写下一条提示词或粗剪'],
+  ['要求只执行一半','写了很多，结果随机缺几条','砍到100字内，关键要求放最前'],
+  ['镜头抖动、变卦','运镜来回摇摆','检查是否写了两种运镜，只留一种'],
+  ['主角每段不一样','脸、衣服、颜色漂移','用同一张参考图或锚点镜头；【主体】原样复制主角设定'],
+  ['动作崩坏、穿模','多人接触或复杂动作','改成单人、慢动作；用特写、背影、剪影回避'],
+  ['生成被拦截','真人脸或版权角色','换成原创角色或插画风格'],
+  ['画面文字乱码','招牌、标题是乱码','去掉画面文字要求，文字全部在剪辑里加'],
+  ['自带莫名配乐','每段音乐不一样','提示词写“无配乐”；剪辑时把该段音轨静音'],
+  ['时间不够','第80分钟还有很多镜头没出','保住开头钩子和结尾，中段合并或删镜头'],
+  ['软件崩溃、文件丢失','工程打不开','每完成一个阶段导出一个低清预览版，随时保存']
+];
+const PHASES = [ // name, start, end (in a 120-min base), output, step
+  ['拆题定方案',0,15,'一句话故事和备选方案',2],
+  ['脚本与分镜',15,30,'分镜表和全部提示词',3],
+  ['锚点镜头',30,40,'主角与风格锁定',4],
+  ['批量生成',40,80,'每个镜头至少1条可用',4],
+  ['剪辑与声音',55,95,'粗剪、配乐、旁白',5],
+  ['字幕包装自检',95,110,'字幕、片尾、自检表',6],
+  ['导出提交',110,120,'导出、播放检查、提交',6]
+];
+const ALERTS = [ // base minute, message, hard deadline?
+  [15,'方向定死，之后不再换题',true],
+  [30,'分镜表和提示词应已完成，开始做锚点镜头',false],
+  [40,'锚点镜头锁定，开始批量生成',false],
+  [55,'开始粗剪，与生成并行',false],
+  [80,'停止新生成，只补关键镜头',true],
+  [95,'开始加字幕、片尾，并对照自检表',false],
+  [110,'无论完成度如何，开始导出提交',true]
+];
+const CAM = [
+  ['推近',/推近|推镜|推进|推向|拉近|靠近主体/],
+  ['拉远',/拉远|拉开|拉镜|后退/],
+  ['摇镜',/摇镜|横摇|竖摇|上摇|下摇|摇向|摇到/],
+  ['横移',/横移|平移|侧移|移镜/],
+  ['环绕',/环绕|绕着|围绕/],
+  ['跟拍',/跟拍|跟随|跟着/],
+  ['升降',/上升|下降|升起|降下|俯冲|拉升|摇臂/],
+  ['变焦',/变焦|希区柯克/],
+  ['固定',/固定机位|固定镜头|画面不动|机位不动/]
+];
+const CAM_LIST = ['缓慢推近，止于近景','缓慢推近，止于特写','缓慢拉远，止于全景','中景缓慢横移，止于侧脸近景','跟拍主体，保持中景','环绕主体半圈，止于正面中景','缓慢上升，止于俯拍全景','固定机位，画面不动','低角度仰拍，缓慢推近，止于中景','手持轻微晃动，跟随主体'];
+
+/* ================= state ================= */
+const uid = () => Math.random().toString(36).slice(2, 9);
+function newShot(p) {
+  return Object.assign({id:uid(), dur:8, useP:true, subject:'', action:'', scene:'', camera:'', useS:true, style:'', sound:'', noMusic:true, refImg:false, refVid:false, tl:false, segs:['','',''], status:'todo', tries:0}, p || {});
+}
+function defaults() {
+  return {s:{theme:'', dur:60, aspect:'16:9', total:120, domain:'', tpl:'pangbai', idea:'', story:'', protagonist:'', style:''},
+          shots:[newShot()], checks:{}, timer:{start:null}, fired:{}, step:1, sound:true};
+}
+function load() {
+  const base = defaults();
+  try {
+    const raw = localStorage.getItem(KEY);
+    if (raw) {
+      const d = JSON.parse(raw);
+      return Object.assign(base, d, {
+        s: Object.assign(base.s, d.s || {}),
+        shots: (d.shots && d.shots.length) ? d.shots.map(x => newShot(x)) : base.shots,
+        timer: Object.assign(base.timer, d.timer || {}),
+        checks: d.checks || {}, fired: d.fired || {}
+      });
+    }
+  } catch (e) {}
+  return base;
+}
+let st = load();
+let saveTimer;
+function save() {
+  clearTimeout(saveTimer);
+  saveTimer = setTimeout(() => { try { localStorage.setItem(KEY, JSON.stringify(st)); } catch (e) {} }, 120);
+}
+
+/* ================= helpers ================= */
+const $ = (s, r) => (r || document).querySelector(s);
+const $$ = (s, r) => Array.from((r || document).querySelectorAll(s));
+const esc = s => String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const tr = v => (v == null ? '' : String(v)).trim();
+const G = (v, label) => tr(v) ? tr(v) : '⟦' + label + '⟧';
+const toCopy = t => t.replace(/⟦(.*?)⟧/g, '____');
+const toHtml = t => esc(t).replace(/⟦(.*?)⟧/g, '<span class="gap">$1</span>');
+const missing = t => Array.from(new Set((t.match(/⟦(.*?)⟧/g) || []).map(x => x.slice(1, -1))));
+const durNum = () => { const n = parseInt(st.s.dur, 10); return n > 0 ? n : 0; };
+const totalMin = () => { const n = parseInt(st.s.total, 10); return n >= 10 ? n : 120; };
+const sc = x => Math.round(x * totalMin() / 120);
+function fmt(ms) {
+  const neg = ms < 0; ms = Math.abs(ms);
+  const t = Math.floor(ms / 1000), h = Math.floor(t / 3600), m = Math.floor(t % 3600 / 60), s = t % 60;
+  return (neg ? '-' : '') + h + ':' + String(m).padStart(2, '0') + ':' + String(s).padStart(2, '0');
+}
+function fmtMS(ms) {
+  const t = Math.max(0, Math.floor(ms / 1000)), m = Math.floor(t / 60), s = t % 60;
+  return m + ':' + String(s).padStart(2, '0');
+}
+
+async function copyText(text, btn) {
+  let ok = false;
+  try { if (navigator.clipboard && window.isSecureContext) { await navigator.clipboard.writeText(text); ok = true; } } catch (e) {}
+  if (!ok) {
+    const ta = document.createElement('textarea');
+    ta.value = text; ta.setAttribute('readonly', ''); ta.style.position = 'fixed'; ta.style.top = '-1000px';
+    document.body.appendChild(ta); ta.select();
+    try { ok = document.execCommand('copy'); } catch (e) { ok = false; }
+    ta.remove();
+  }
+  if (btn) {
+    const old = btn.dataset.label || btn.textContent;
+    btn.dataset.label = old;
+    btn.textContent = ok ? '已复制' : '复制失败，请手动选中';
+    btn.classList.toggle('done', ok);
+    clearTimeout(btn._t);
+    btn._t = setTimeout(() => { btn.textContent = old; btn.classList.remove('done'); }, 1600);
+  }
+  return ok;
+}
+
+/* ================= prompt cards ================= */
+const CARDS = {
+  A: {t:'卡片 A', sub:'出10个创意', b: s => {
+    const tp = TPL[s.tpl] && s.tpl ? TPL[s.tpl] : null;
+    const dm = tr(s.domain);
+    return `你是一名获奖短片导演，也是AI视频比赛的评委。比赛主题是「${G(s.theme,'主题')}」，成片约${G(s.dur,'秒数')}秒，画幅${s.aspect}。
+视频由 Seedance 生成：单个镜头4到15秒，擅长单人、单一动作、氛围镜头；不擅长多人肢体互动，也不擅长在画面里生成文字。
+请从三个角度构思：字面（主题最直接的画面）、反转（反着理解，或从意想不到的对象切入）、身边（日常生活${dm ? '或「' + dm + '」领域' : ''}里的人和事）。${dm ? '\n至少3个创意从「' + dm + '」切入。' : ''}${tp ? '\n优先使用「' + tp.n + '」结构：' + tp.s + '。' : ''}
+给出10个创意，每个包含：一句话故事、核心画面、情绪转折、为什么契合主题。
+然后按四项各打1到5分，并按总分排序：契合主题、AI可实现、有记忆点、能展示AI能力。`;
+  }},
+  B: {t:'卡片 B', sub:'评委挑刺', b: s =>
+`现在你是最挑剔的评委，比赛主题是「${G(s.theme,'主题')}」。
+针对下面这个创意，指出3个最可能扣分的地方，各给一个改法。
+创意：${G(s.idea,'选中的创意')}
+最后给出改进后的一句话故事，30字以内。`},
+  C: {t:'卡片 C', sub:'主角设定', b: s =>
+`故事：${G(s.story,'一句话故事')}
+为这个故事的主角（人或物）写一段固定外观描述，50字以内：年龄或材质、发型或形状、服装颜色和材质、一个标志性细节。
+${tr(s.style) ? '画面风格已定为「' + tr(s.style) + '」，不用再写风格。' : '再写一行统一的画面风格描述，20字以内，包括色调和质感。'}
+不要使用真人明星或已有的动漫、影视角色。之后每个镜头都会原样复制这段描述。`},
+  C2: {t:'卡片 C2', sub:'主角参考图（给图片工具）', b: s =>
+`${G(s.protagonist,'主角设定')}。${G(s.style,'统一风格')}。
+角色设定图：纯浅灰背景，同一主角的正面、侧面、背面三个视角并排，完整入画，光线均匀，画面中不要任何文字。`},
+  D: {t:'卡片 D', sub:'脚本', b: s => {
+    const tp = TPL[s.tpl] && s.tpl ? TPL[s.tpl] : null;
+    const d = durNum();
+    return `比赛主题是「${G(s.theme,'主题')}」。基于一句话故事「${G(s.story,'一句话故事')}」，写一个约${G(s.dur,'秒数')}秒的短片脚本。
+${tp ? '叙事结构：' + tp.n + '，' + tp.s + '。\n' : ''}节奏：0到3秒是钩子，用一个反常画面或一个问题；中段三个递进节拍；结尾一句金句或一个反转，并呼应开头。
+输出旁白全文，以及每句旁白对应的画面。每句旁白不超过15个字，旁白总字数不超过${G(d ? d * 4 : '', '字数上限')}字。
+画面以单人、单一动作、氛围镜头为主；不要多人肢体接触，不要在画面里出现文字。`;
+  }},
+  E: {t:'卡片 E', sub:'分镜表和视频提示词', b: s => {
+    const d = durNum();
+    const n = d ? Math.max(3, Math.round(d / 9)) : '';
+    return `把上面的脚本拆成分镜，总时长约${G(s.dur,'秒数')}秒，镜头数${G(n,'镜头数')}个左右，画幅${s.aspect}。
+第一步，输出分镜表，每个镜头一行：镜号｜时长｜景别｜画面内容｜声音｜对应旁白。时长在4到15秒之间，优先8到10秒。
+第二步，逐个镜头输出可直接复制的视频提示词，严格按下面格式，每条不超过100字：
+镜头1（8秒）
+【主体】${tr(s.protagonist) || '画面里的主要对象，1到2个具体特征'}
+【动作】一条连贯动作，写出物理结果
+【场景】地点加光线
+【运镜】只写一种运镜，写明终点，例如“缓慢推近，止于近景”
+【风格/音频】${tr(s.style) || '统一的视觉基调'}；点名具体声音；结尾写“无配乐”
+时长超过8秒的镜头，【动作】换成三段时间轴，每段一行，例如：
+【动作】
+1到3秒：……
+4到6秒：……
+7到9秒：……
+规则：
+1. ${tr(s.protagonist) ? '主角出场的镜头，【主体】一字不改地复制上面的主角设定；没有主角的镜头，【主体】写画面里的主要对象。' : '【主体】写画面里的主要对象，同一对象在各镜头中描述保持一致。'}
+2. 一个镜头只用一种运镜。
+3. 不出现多人肢体接触，不在画面里生成文字，不使用真人明星或已有角色。
+4. ${tr(s.style) ? '【风格/音频】开头一字不改地复制统一风格。' : '所有镜头的视觉基调保持一致。'}`;
+  }},
+  F: {t:'卡片 F', sub:'分镜自检', b: s =>
+`逐个镜头检查上面的视频提示词：
+1. 是否超过100字
+2. 是否写了两种运镜
+3. ${tr(s.protagonist) ? '主角镜头的【主体】是否与「' + tr(s.protagonist) + '」完全一致' : '同一对象在各镜头中的描述是否一致'}
+4. 是否有多人肢体接触或画面文字
+5. 超过8秒的镜头，【动作】是否写成了三段时间轴
+6. 所有镜头时长加起来是否在${G(s.dur,'秒数')}秒左右，误差不超过5秒
+列出问题，然后按原格式输出修改后的全部镜头提示词。`},
+  G: {t:'卡片 G', sub:'标题和金句', b: s =>
+`为这个短片起5个标题，每个不超过10个字；再写3句结尾金句，每句不超过15个字。
+要呼应主题「${G(s.theme,'主题')}」和故事「${G(s.story,'一句话故事')}」，具体，不说空话。`},
+  H: {t:'卡片 H', sub:'配音稿', b: s =>
+`把下面的旁白整理成配音稿：每句单独一行，用“/”标出停顿，在括号里标出语气，例如（平静）（上扬）（停两秒）。总时长控制在${G(s.dur,'秒数')}秒左右。
+旁白：
+（在这里粘贴旁白全文）`}
+};
+
+function promptBlock(id, title, sub, text) {
+  const miss = missing(text);
+  return `<div class="prompt">
+    <div class="prompt-head"><span class="prompt-title">${esc(title)}<small>${esc(sub)}</small></span>
+    <button class="btn sm" type="button" data-copy-card="${id}">复制</button></div>
+    <div class="prompt-body">${toHtml(text)}</div>
+    ${miss.length ? `<div class="prompt-foot">还没填：${miss.map(esc).join('、')}。空着也能复制，复制后会显示为 ____。</div>` : ''}
+  </div>`;
+}
+function renderCards() {
+  $$('[data-card]').forEach(el => {
+    const c = CARDS[el.dataset.card];
+    el.innerHTML = promptBlock(el.dataset.card, c.t, c.sub, c.b(st.s));
+  });
+}
+
+/* ================= bindings ================= */
+function renderBinds() {
+  $$('[data-bind]').forEach(el => {
+    const k = el.dataset.bind, v = st.s[k] == null ? '' : st.s[k];
+    if (el.type === 'radio') el.checked = (String(v) === el.value);
+    else if (document.activeElement !== el) el.value = v;
+  });
+}
+function renderTpls() {
+  $('#tpls').innerHTML = Object.keys(TPL).map(k => {
+    const t = TPL[k];
+    return `<label class="tpl"><input type="radio" name="tpl" value="${k}" data-bind="tpl"${st.s.tpl === k ? ' checked' : ''}>
+      <span class="tn">${esc(t.n)}${t.rec ? '<span class="tag">最稳</span>' : ''}</span>
+      <span class="ts">${esc(t.s)}</span><span class="tf">适合：${esc(t.f)}</span></label>`;
+  }).join('');
+}
+
+/* ================= checklists ================= */
+function renderChecks() {
+  $$('[data-checks]').forEach(ul => {
+    const g = ul.dataset.checks;
+    ul.innerHTML = CHECKS[g].map(([id, txt]) =>
+      `<li><label><input type="checkbox" data-check="${id}"${st.checks[id] ? ' checked' : ''}><span>${esc(txt)}</span></label></li>`).join('');
+  });
+  renderProgress();
+}
+function renderProgress() {
+  $$('[data-progress]').forEach(el => {
+    const list = CHECKS[el.dataset.progress];
+    const n = list.filter(([id]) => st.checks[id]).length;
+    el.textContent = n + '/' + list.length;
+  });
+}
+
+/* ================= shots ================= */
+function segLabels(d) {
+  const a = Math.round(d / 3), b = Math.round(2 * d / 3);
+  return ['1到' + a + '秒', (a + 1) + '到' + b + '秒', (b + 1) + '到' + d + '秒'];
+}
+function shotParts(sh) {
+  const subject = sh.useP ? tr(st.s.protagonist) : tr(sh.subject);
+  const style = sh.useS ? tr(st.s.style) : tr(sh.style);
+  return {subject, style};
+}
+function composeShot(sh) {
+  const {subject, style} = shotParts(sh);
+  const lines = [];
+  if (sh.refImg) lines.push('@图片1 = 主角形象（脸和服装保持一致）');
+  if (sh.refVid) lines.push('@视频1 = 锚点镜头，只参考人物外观和色调');
+  lines.push('【主体】' + (subject || '⟦' + (sh.useP ? '主角设定（第3步）' : '主体') + '⟧'));
+  const d = parseInt(sh.dur, 10) || 8;
+  if (sh.tl && d >= 6) {
+    const L = segLabels(d);
+    sh.segs.forEach((t, i) => lines.push(L[i] + '：' + G(t, '第' + (i + 1) + '段画面')));
+  } else {
+    lines.push('【动作】' + G(sh.action, '动作'));
+  }
+  lines.push('【场景】' + G(sh.scene, '场景'));
+  lines.push('【运镜】' + G(sh.camera, '运镜'));
+  let tail = [style, tr(sh.sound)].filter(Boolean).join('；');
+  if (sh.noMusic) tail = tail ? tail.replace(/[，,；;。]+$/, '') + '，无配乐' : '无配乐';
+  if (sh.useS && !tr(st.s.style)) tail = '⟦统一风格（第3步）⟧' + (tail ? '；' + tail : '');
+  lines.push('【风格/音频】' + (tail || '⟦声音⟧'));
+  return lines.join('\n');
+}
+function shotLen(sh) {
+  const {subject, style} = shotParts(sh);
+  const body = [subject, sh.tl ? sh.segs.join('') : sh.action, sh.scene, sh.camera, style, sh.sound, sh.noMusic ? '无配乐' : ''].join('');
+  return body.replace(/\s/g, '').length;
+}
+function camKinds(text) { return CAM.filter(([, re]) => re.test(text)).map(([n]) => n); }
+function lintShot(sh) {
+  const out = [];
+  const {subject, style} = shotParts(sh);
+  const d = parseInt(sh.dur, 10);
+  const actionText = sh.tl ? sh.segs.join(' ') : sh.action;
+  const all = [subject, actionText, sh.scene, sh.camera, style, sh.sound].join(' ');
+  if (!subject) out.push(['warn', sh.useP ? '还没填主角设定（第3步），或取消勾选“用主角设定”自己写主体' : '缺【主体】']);
+  if (!tr(actionText)) out.push(['warn', '缺动作']);
+  if (!tr(sh.camera)) out.push(['warn', '缺运镜，模型会自己乱选镜头']);
+  if (!(d >= 4 && d <= 15)) out.push(['bad', '时长要在4到15秒之间']);
+  const len = shotLen(sh);
+  if (len > 100) out.push(['bad', '共' + len + '字，超过100字，后面的要求容易被忽略，先砍形容词']);
+  const kinds = camKinds(sh.tl ? sh.camera + ' ' + sh.segs.join(' ') : sh.camera);
+  if (kinds.length > 1) out.push(['bad', '可能写了两种运镜（' + kinds.join('、') + '），只留一种，或拆成两个镜头']);
+  if (!sh.tl && /镜头|运镜|机位/.test(sh.action + sh.scene)) out.push(['warn', '动作或场景里提到了镜头，运镜只写在【运镜】里']);
+  if (/拥抱|握手|打斗|打架|亲吻|接吻|搏斗|牵手|击掌|扭打|格斗|摔跤|交手|搀扶/.test(all)) out.push(['bad', '有多人肢体接触，容易穿模，改成单人或用背影、剪影回避']);
+  const textCheck = all.replace(/无文字|不出现文字|没有文字|无字幕|不要文字|不生成文字|不要任何文字/g, '');
+  if (/字幕|文字|标语|写着|标题|logo|招牌上|横幅/i.test(textCheck)) out.push(['bad', '要求画面里出现文字，容易乱码，文字放到剪辑里加']);
+  if (/明星|网红|名人/.test(all)) out.push(['bad', '真人明星会被平台拦截，换成原创角色']);
+  if (!tr(sh.sound) && !sh.noMusic && !/声|音|响/.test(style)) out.push(['warn', '没写声音，也没勾“无配乐”，模型会随机配乐']);
+  if (d > 8 && !sh.tl) out.push(['warn', '超过8秒，建议打开“按时间轴写”']);
+  if (sh.tries >= 3 && sh.status !== 'ok') out.push(['bad', '已经试了' + sh.tries + '次，换个镜头设计，别死磕']);
+  if (!out.length) out.push(['good', '检查通过']);
+  return out;
+}
+const STATUS = [['todo','待生成'],['sent','已提交'],['ok','可用'],['drop','放弃']];
+function shotHtml(sh, i) {
+  const d = parseInt(sh.dur, 10) || 8;
+  const L = segLabels(Math.max(d, 6));
+  return `<article class="shot" data-id="${sh.id}" data-status="${sh.status}" aria-label="镜头${i + 1}">
+  <div class="shot-head">
+    <span class="shot-no">镜头 ${i + 1}</span>
+    <label class="dur"><input type="number" min="4" max="15" data-f="dur" value="${esc(sh.dur)}" aria-label="镜头时长">秒</label>
+    <select data-f="status" aria-label="状态">${STATUS.map(([v, n]) => `<option value="${v}"${sh.status === v ? ' selected' : ''}>${n}</option>`).join('')}</select>
+    <span class="tries${sh.tries >= 3 ? ' hot' : ''}">已试 <b>${sh.tries}</b> 次 <button class="icon" type="button" data-act="try" title="生成一次就点一下">+1</button></span>
+    <span class="shot-tools">
+      <button class="icon" type="button" data-act="up" aria-label="上移">上移</button>
+      <button class="icon" type="button" data-act="down" aria-label="下移">下移</button>
+      <button class="icon" type="button" data-act="dup">复制一份</button>
+      <button class="icon" type="button" data-act="del">删除</button>
+    </span>
+  </div>
+  <div class="shot-body">
+    <div class="field">
+      <span class="lbl">主体 <label class="inline-check"><input type="checkbox" data-f="useP"${sh.useP ? ' checked' : ''}> 用主角设定</label></span>
+      ${sh.useP
+        ? `<p class="small muted" style="margin:0">${tr(st.s.protagonist) ? esc(st.s.protagonist) : '第3步还没填主角设定'}</p>`
+        : `<input type="text" data-f="subject" value="${esc(sh.subject)}" placeholder="例如：一盏老式黄铜台灯，灯罩有划痕">`}
+    </div>
+    <div class="field">
+      <span class="lbl">${sh.tl ? '画面时间轴' : '动作'} ${d >= 6 ? `<label class="inline-check"><input type="checkbox" data-f="tl"${sh.tl ? ' checked' : ''}> 按时间轴写</label>` : ''}</span>
+      ${sh.tl && d >= 6
+        ? `<div class="segs">${sh.segs.map((t, k) => `<div class="seg-row"><span>${L[k]}</span><input type="text" data-f="seg${k}" value="${esc(t)}" aria-label="${L[k]}"></div>`).join('')}</div>`
+        : `<input type="text" data-f="action" value="${esc(sh.action)}" placeholder="例如：灯泡闪了两下后亮起，灰尘在光束里缓缓飘落">`}
+    </div>
+    <div class="grid2">
+      <label class="field"><span class="lbl">场景</span><input type="text" data-f="scene" value="${esc(sh.scene)}" placeholder="例如：深夜的旧书房，窗外透进蓝色月光"></label>
+      <label class="field"><span class="lbl">运镜</span><input type="text" data-f="camera" list="camList" value="${esc(sh.camera)}" placeholder="例如：缓慢推近，止于特写"></label>
+    </div>
+    <div class="grid2">
+      <div class="field">
+        <span class="lbl">风格 <label class="inline-check"><input type="checkbox" data-f="useS"${sh.useS ? ' checked' : ''}> 用统一风格</label></span>
+        ${sh.useS
+          ? `<p class="small muted" style="margin:0">${tr(st.s.style) ? esc(st.s.style) : '第3步还没填统一风格'}</p>`
+          : `<input type="text" data-f="style" list="styleList" value="${esc(sh.style)}" placeholder="例如：胶片质感，暖黄与冷蓝对比">`}
+      </div>
+      <div class="field">
+        <span class="lbl">声音 <label class="inline-check"><input type="checkbox" data-f="noMusic"${sh.noMusic ? ' checked' : ''}> 无配乐</label></span>
+        <input type="text" data-f="sound" value="${esc(sh.sound)}" placeholder="例如：电流嗡声，钨丝轻响">
+      </div>
+    </div>
+    <div class="refs">
+      <label class="inline-check"><input type="checkbox" data-f="refImg"${sh.refImg ? ' checked' : ''}> 引用 @图片1 主角形象</label>
+      <label class="inline-check"><input type="checkbox" data-f="refVid"${sh.refVid ? ' checked' : ''}> 引用 @视频1 锚点镜头</label>
+    </div>
+    <div class="shot-out"></div>
+  </div>
+</article>`;
+}
+function renderShotOut(sh) {
+  const el = $(`.shot[data-id="${sh.id}"] .shot-out`);
+  if (!el) return;
+  const text = composeShot(sh);
+  const len = shotLen(sh);
+  const lints = lintShot(sh);
+  el.innerHTML = `<div class="prompt">
+    <div class="prompt-head"><span class="prompt-title">视频提示词 <span class="count${len > 100 ? ' over' : ''}">${len}/100字</span></span>
+    <button class="btn sm primary" type="button" data-act="copy">复制</button></div>
+    <div class="prompt-body">${toHtml(text)}</div></div>
+    <ul class="lints">${lints.map(([lv, m]) => `<li class="${lv === 'bad' ? 'bad' : lv === 'good' ? 'good' : ''}">${esc(m)}</li>`).join('')}</ul>`;
+  const art = el.closest('.shot');
+  art.dataset.status = sh.status;
+}
+function renderShots() {
+  $('#shots').innerHTML = st.shots.map(shotHtml).join('');
+  st.shots.forEach(renderShotOut);
+  renderTotals();
+}
+function renderTotals() {
+  const live = st.shots.filter(s => s.status !== 'drop');
+  const sum = live.reduce((a, s) => a + (parseInt(s.dur, 10) || 0), 0);
+  const ok = st.shots.filter(s => s.status === 'ok').length;
+  const target = durNum();
+  let cmp = '';
+  if (target) {
+    const diff = sum - target;
+    cmp = Math.abs(diff) <= 5 ? `<span class="ok">与目标${target}秒相符</span>`
+        : diff > 0 ? `<span class="off">比目标${target}秒多${diff}秒</span>`
+        : `<span class="off">比目标${target}秒少${-diff}秒</span>`;
+  }
+  $('#totals').innerHTML = `<b>${live.length}</b> 个镜头，合计 <b>${sum}</b> 秒，${cmp}；可用 <b>${ok}</b> 个`;
+}
+const findShot = id => st.shots.find(s => s.id === id);
+
+/* ---- import parser ---- */
+function parseImport(text) {
+  const re = /【\s*(主体|动作|场景|运镜|风格\s*[\/／]\s*音频|风格|音频)\s*】/g;
+  const toks = []; let m;
+  while ((m = re.exec(text))) toks.push({tag: m[1].replace(/[\s／]/g, '').replace('风格音频', '风格/音频'), start: m.index, end: re.lastIndex});
+  const shots = []; let cur = null;
+  const segRe = /^\s*(\d{1,2})\s*(?:到|-|–|—|~|～|至)\s*(\d{1,2})\s*秒\s*[：:]\s*(.+)$/;
+  toks.forEach((t, i) => {
+    const next = toks[i + 1];
+    const raw = text.slice(t.end, next ? next.start : text.length);
+    const lines = raw.split(/\r?\n/);
+    const first = lines[0].split(/[|｜]/)[0].trim();
+    if (t.tag === '主体') {
+      const pre = text.slice(Math.max(0, t.start - 120), t.start);
+      const ds = pre.match(/(\d{1,2})\s*秒/g);
+      let dur = 8;
+      if (ds) { const n = parseInt(ds[ds.length - 1], 10); if (n >= 4 && n <= 15) dur = n; }
+      const preLines = pre.split(/\r?\n/).slice(-3).join(' ');
+      cur = {dur, subject: '', action: '', scene: '', camera: '', styleRaw: '', soundRaw: '', segs: [], refImg: /@图片1/.test(preLines), refVid: /@视频1/.test(preLines)};
+      shots.push(cur);
+    }
+    if (!cur) return;
+    lines.slice(1).forEach(l => { const s = l.match(segRe); if (s) cur.segs.push(s[3].trim()); });
+    if (t.tag === '主体') cur.subject = first;
+    else if (t.tag === '动作') cur.action = first;
+    else if (t.tag === '场景') cur.scene = first;
+    else if (t.tag === '运镜') cur.camera = first;
+    else if (t.tag === '风格/音频' || t.tag === '风格') cur.styleRaw = first;
+    else if (t.tag === '音频') cur.soundRaw = first;
+  });
+  const P = tr(st.s.protagonist), S = tr(st.s.style);
+  const musicRe = /无配乐|不要配乐|没有配乐|无背景音乐|不要背景音乐/g;
+  return shots.map(c => {
+    let raw = (c.styleRaw + (c.soundRaw ? '；' + c.soundRaw : ''));
+    const noMusic = musicRe.test(raw); musicRe.lastIndex = 0;
+    raw = raw.replace(musicRe, '').replace(/[，,；;。\s]+$/, '').replace(/^[，,；;\s]+/, '').replace(/[，,；;]{2,}/g, '；');
+    let useS = false, style = raw, sound = '';
+    if (S && raw.indexOf(S) === 0) { useS = true; style = ''; sound = raw.slice(S.length).replace(/^[；;，,。\s]+/, ''); }
+    else if (c.soundRaw) { style = c.styleRaw.replace(musicRe, '').replace(/[，,；;。\s]+$/, ''); sound = c.soundRaw.replace(musicRe, '').replace(/[，,；;。\s]+$/, ''); }
+    const useP = !!P && c.subject === P;
+    const segs = c.segs.slice(0, 3);
+    if (c.segs.length > 3) segs[2] = c.segs.slice(2).join('；');
+    const tl = segs.length >= 2 && !c.action;
+    while (segs.length < 3) segs.push('');
+    return newShot({dur: c.dur, useP, subject: useP ? '' : c.subject, action: c.action, scene: c.scene, camera: c.camera, useS, style, sound, noMusic, tl, segs, refImg: c.refImg, refVid: c.refVid});
+  });
+}
+
+/* ================= export ================= */
+function exportText() {
+  const s = st.s, tp = TPL[s.tpl] || TPL[''];
+  const label = Object.fromEntries(STATUS);
+  const out = ['AI视频比赛作战台 导出', '',
+    '主题：' + (tr(s.theme) || '（未填）'),
+    '成片：' + (s.dur || '?') + '秒，' + s.aspect,
+    '叙事模板：' + tp.n,
+    '选中的创意：' + (tr(s.idea) || '（未填）'),
+    '一句话故事：' + (tr(s.story) || '（未填）'),
+    '主角设定：' + (tr(s.protagonist) || '（未填）'),
+    '统一风格：' + (tr(s.style) || '（未填）'), ''];
+  st.shots.forEach((sh, i) => {
+    out.push(`镜头${i + 1}（${sh.dur}秒，${label[sh.status]}，试${sh.tries}次）`);
+    out.push(toCopy(composeShot(sh)), '');
+  });
+  return out.join('\n');
+}
+
+/* ================= steps ================= */
+function goStep(n, scroll) {
+  st.step = n; save();
+  $$('section.step').forEach(sec => { sec.hidden = sec.dataset.step !== String(n); });
+  $$('.step-btn').forEach(b => { if (b.dataset.go === String(n)) b.setAttribute('aria-current', 'step'); else b.removeAttribute('aria-current'); });
+  if (scroll) window.scrollTo({top: 0});
+}
+
+/* ================= timer ================= */
+let actx = null;
+function beep(hard) {
+  if (!st.sound) return;
+  try {
+    actx = actx || new (window.AudioContext || window.webkitAudioContext)();
+    const play = (at, f) => {
+      const o = actx.createOscillator(), g = actx.createGain();
+      o.type = 'sine'; o.frequency.value = f; o.connect(g); g.connect(actx.destination);
+      g.gain.setValueAtTime(0.0001, at); g.gain.exponentialRampToValueAtTime(0.25, at + 0.02); g.gain.exponentialRampToValueAtTime(0.0001, at + 0.5);
+      o.start(at); o.stop(at + 0.55);
+    };
+    const t = actx.currentTime;
+    play(t, hard ? 880 : 660);
+    if (hard) { play(t + 0.6, 880); play(t + 1.2, 880); }
+  } catch (e) {}
+}
+let alertMsg = '';
+function notify(min, msg, hard) {
+  alertMsg = '第' + min + '分钟：' + msg;
+  $('#alertText').textContent = alertMsg;
+  const a = $('#alert'); a.hidden = false; a.classList.toggle('hard', !!hard);
+  beep(hard);
+  try { if (navigator.vibrate) navigator.vibrate(hard ? [300, 150, 300, 150, 300] : [250]); } catch (e) {}
+}
+function renderPhases() {
+  $('#phases').innerHTML = PHASES.map(([n, a, b, o, step], i) =>
+    `<li class="phase" data-i="${i}" data-step="${step}" tabindex="0" role="button" aria-label="${n}，第${sc(a)}到${sc(b)}分钟，跳到第${step}步">
+      <span class="ph-bar"></span><span class="ph-name">${n}</span><span class="ph-time">${sc(a)}–${sc(b)}分</span>
+      <span class="ph-out">${o}</span></li>`).join('');
+  $('#deadlines').innerHTML = '硬节点：' + ALERTS.filter(a => a[2]).map(a => `<b>第${sc(a[0])}分钟</b>${a[1]}`).join('；');
+}
+function tick() {
+  const T = totalMin() * 60000;
+  const start = st.timer.start;
+  const clock = $('#clock');
+  $('#startBtn').hidden = !!start;
+  if (!start) {
+    clock.textContent = fmt(T); clock.classList.remove('late');
+    $('#clockLabel').textContent = '比赛时长';
+    $('#nowPhase').textContent = '未开始计时';
+    $('#nextNode').textContent = '主题公布时点“开始计时”';
+    $('#nextNode').classList.remove('hot');
+    $$('.phase').forEach(p => p.classList.remove('on', 'done'));
+    if (!alertMsg) document.title = 'AI视频比赛作战台';
+    return;
+  }
+  const e = Date.now() - start, rem = T - e, em = e / 60000;
+  $('#clockLabel').textContent = '剩余时间';
+  clock.textContent = rem > 0 ? fmt(rem) : '时间到';
+  clock.classList.toggle('late', rem <= 10 * 60000);
+  const cur = PHASES.filter(([, a, b]) => em >= sc(a) && em < sc(b)).map(p => p[0]);
+  $('#nowPhase').textContent = rem > 0 ? '当前：' + (cur.join(' + ') || '收尾') : '已超时，立即提交';
+  $$('.phase').forEach(p => {
+    const [, a, b] = PHASES[+p.dataset.i];
+    p.classList.toggle('on', em >= sc(a) && em < sc(b));
+    p.classList.toggle('done', em >= sc(b));
+  });
+  const nx = ALERTS.find(([m]) => sc(m) * 60000 > e);
+  const nn = $('#nextNode');
+  if (nx) {
+    const left = sc(nx[0]) * 60000 - e;
+    nn.innerHTML = `距第${sc(nx[0])}分钟（${esc(nx[1])}）还有 <b>${fmtMS(left)}</b>`;
+    nn.classList.toggle('hot', !!nx[2] && left <= 5 * 60000);
+  } else {
+    nn.textContent = rem > 0 ? '最后阶段：导出、播放检查、提交' : '';
+    nn.classList.remove('hot');
+  }
+  ALERTS.forEach(([m, msg, hard]) => {
+    const at = sc(m) * 60000, k = String(sc(m));
+    if (e >= at && !st.fired[k]) {
+      st.fired[k] = 1; save();
+      if (e - at < 120000) notify(sc(m), msg, hard);
+    }
+  });
+  document.title = alertMsg ? '【提醒】' + alertMsg : (rem > 0 ? '剩 ' + fmt(rem) + ' 作战台' : '时间到 作战台');
+}
+function startTimer(minutesIn) {
+  st.timer.start = Date.now() - (minutesIn || 0) * 60000;
+  st.fired = {};
+  ALERTS.forEach(([m]) => { if (sc(m) * 60000 <= (minutesIn || 0) * 60000) st.fired[String(sc(m))] = 1; });
+  save(); tick();
+}
+
+/* ================= events ================= */
+document.addEventListener('input', ev => {
+  const el = ev.target;
+  if (el.dataset.bind) {
+    const k = el.dataset.bind;
+    st.s[k] = el.type === 'number' ? el.value : el.value;
+    $$(`[data-bind="${k}"]`).forEach(o => { if (o !== el && o.type !== 'radio') o.value = el.value; });
+    save(); renderCards();
+    if (k === 'protagonist' || k === 'style') {
+      st.shots.forEach(sh => {
+        const art = $(`.shot[data-id="${sh.id}"]`);
+        if (!art) return;
+        if (k === 'protagonist' && sh.useP) { const p = $('[data-f="useP"]', art).closest('.field').querySelector('p'); if (p) p.textContent = tr(st.s.protagonist) || '第3步还没填主角设定'; }
+        if (k === 'style' && sh.useS) { const p = $('[data-f="useS"]', art).closest('.field').querySelector('p'); if (p) p.textContent = tr(st.s.style) || '第3步还没填统一风格'; }
+        renderShotOut(sh);
+      });
+    }
+    if (k === 'dur') renderTotals();
+    if (k === 'total') { renderPhases(); tick(); }
+    return;
+  }
+  const f = el.dataset.f;
+  if (f) {
+    const art = el.closest('.shot'); const sh = findShot(art.dataset.id);
+    if (!sh) return;
+    if (el.type === 'checkbox') return; // handled on change
+    if (f.indexOf('seg') === 0) sh.segs[+f.slice(3)] = el.value;
+    else sh[f] = el.value;
+    save();
+    if (f === 'dur') {
+      const d = parseInt(el.value, 10);
+      if (d >= 4 && d <= 15) { renderTotals(); }
+      renderShotOut(sh); renderTotals();
+      return;
+    }
+    renderShotOut(sh);
+  }
+});
+document.addEventListener('change', ev => {
+  const el = ev.target;
+  if (el.dataset.bind && el.type === 'radio') {
+    st.s[el.dataset.bind] = el.value; save(); renderCards();
+    return;
+  }
+  if (el.dataset.check) {
+    st.checks[el.dataset.check] = el.checked; save(); renderProgress();
+    return;
+  }
+  const f = el.dataset.f;
+  if (f) {
+    const art = el.closest('.shot'); const sh = findShot(art.dataset.id);
+    if (!sh) return;
+    if (el.type === 'checkbox') {
+      sh[f] = el.checked; save();
+      if (f === 'useP' || f === 'useS' || f === 'tl') {
+        const i = st.shots.indexOf(sh);
+        art.outerHTML = shotHtml(sh, i);
+        renderShotOut(sh);
+        const again = $(`.shot[data-id="${sh.id}"] [data-f="${f}"]`); if (again) again.focus();
+      } else renderShotOut(sh);
+      return;
+    }
+    if (f === 'status') { sh.status = el.value; save(); renderShotOut(sh); renderTotals(); return; }
+    if (f === 'dur') {
+      let d = parseInt(el.value, 10); if (!(d >= 4)) d = 4; if (d > 15) d = 15;
+      sh.dur = d; save();
+      const i = st.shots.indexOf(sh);
+      art.outerHTML = shotHtml(sh, i); renderShotOut(sh); renderTotals();
+    }
+  }
+});
+const armed = new WeakMap();
+function arm(btn, label, fn) {
+  if (armed.get(btn)) { armed.delete(btn); fn(); return; }
+  const old = btn.textContent;
+  btn.textContent = label; btn.classList.add('arm'); armed.set(btn, true);
+  setTimeout(() => { if (armed.get(btn)) { armed.delete(btn); btn.textContent = old; btn.classList.remove('arm'); } }, 3000);
+}
+document.addEventListener('click', ev => {
+  const t = ev.target.closest('button, .phase');
+  if (!t) return;
+  if (t.dataset.go) { goStep(+t.dataset.go, true); return; }
+  if (t.dataset.copyCard) { copyText(toCopy(CARDS[t.dataset.copyCard].b(st.s)), t); return; }
+  if (t.dataset.dur) {
+    st.s.dur = t.dataset.dur; renderBinds(); save(); renderCards(); renderTotals(); return;
+  }
+  if (t.classList.contains('phase')) {
+    goStep(+t.dataset.step, true);
+    $('#slate').classList.remove('open'); $('#moreBtn').setAttribute('aria-expanded', 'false');
+    return;
+  }
+  const act = t.dataset.act;
+  if (act) {
+    const art = t.closest('.shot'); const sh = findShot(art.dataset.id); const i = st.shots.indexOf(sh);
+    if (act === 'copy') { copyText(toCopy(composeShot(sh)), t); if (sh.status === 'todo') { sh.status = 'sent'; sh.tries = Math.max(sh.tries, 1); save(); const sel = $('[data-f="status"]', art); sel.value = 'sent'; art.dataset.status = 'sent'; $('.tries b', art).textContent = sh.tries; renderTotals(); } return; }
+    if (act === 'try') { sh.tries++; if (sh.status === 'todo') sh.status = 'sent'; save(); art.outerHTML = shotHtml(sh, i); renderShotOut(sh); renderTotals(); return; }
+    if (act === 'up' && i > 0) { st.shots.splice(i - 1, 0, st.shots.splice(i, 1)[0]); save(); renderShots(); return; }
+    if (act === 'down' && i < st.shots.length - 1) { st.shots.splice(i + 1, 0, st.shots.splice(i, 1)[0]); save(); renderShots(); return; }
+    if (act === 'dup') { const c = newShot(JSON.parse(JSON.stringify(sh))); c.id = uid(); c.status = 'todo'; c.tries = 0; st.shots.splice(i + 1, 0, c); save(); renderShots(); return; }
+    if (act === 'del') { arm(t, '确认删除', () => { st.shots.splice(i, 1); if (!st.shots.length) st.shots.push(newShot()); save(); renderShots(); }); return; }
+    return;
+  }
+  switch (t.id) {
+    case 'startBtn':
+      try { actx = actx || new (window.AudioContext || window.webkitAudioContext)(); actx.resume(); } catch (e) {}
+      startTimer(0); break;
+    case 'calibBtn': {
+      const m = parseFloat($('#calibIn').value);
+      if (m >= 0) { try { actx = actx || new (window.AudioContext || window.webkitAudioContext)(); actx.resume(); } catch (e) {} startTimer(m); $('#calibIn').value = ''; }
+      break;
+    }
+    case 'resetTimer':
+      arm(t, '确认重置', () => { st.timer.start = null; st.fired = {}; alertMsg = ''; $('#alert').hidden = true; save(); tick(); t.textContent = '重置计时'; t.classList.remove('arm'); });
+      break;
+    case 'moreBtn': {
+      const open = $('#slate').classList.toggle('open');
+      t.setAttribute('aria-expanded', open ? 'true' : 'false'); break;
+    }
+    case 'helpBtn': {
+      const d = $('#help'); if (d.showModal) d.showModal(); else d.setAttribute('open', ''); break;
+    }
+    case 'helpClose': { const d = $('#help'); if (d.close) d.close(); else d.removeAttribute('open'); break; }
+    case 'alertOk': alertMsg = ''; $('#alert').hidden = true; tick(); break;
+    case 'addShot': st.shots.push(newShot()); save(); renderShots();
+      { const last = $$('.shot').pop(); if (last) { last.scrollIntoView({block: 'center'}); const f = $('input[type=text]', last); if (f) f.focus(); } }
+      break;
+    case 'copyAllShots': {
+      const txt = st.shots.filter(s => s.status !== 'drop').map((sh, i) => `镜头${i + 1}（${sh.dur}秒）\n` + toCopy(composeShot(sh))).join('\n\n');
+      copyText(txt, t); break;
+    }
+    case 'importBtn': {
+      const txt = $('#importBox').value; const msg = $('#importMsg');
+      const shots = parseImport(txt);
+      if (!shots.length) { msg.className = 'import-msg err'; msg.textContent = '没找到【主体】标签。先用卡片 E 让AI按格式输出，再整段粘贴进来。'; break; }
+      const blank = st.shots.every(s => !tr(s.subject) && !tr(s.action) && !tr(s.scene) && !tr(s.camera) && !s.segs.some(tr));
+      st.shots = blank ? shots : st.shots.concat(shots);
+      save(); renderShots();
+      msg.className = 'import-msg ok';
+      msg.textContent = (blank ? '已拆出 ' : '已追加 ') + shots.length + ' 个镜头。' + (blank ? '' : '旧镜头保留在前面，不要的可以删除。');
+      break;
+    }
+    case 'importClear': $('#importBox').value = ''; $('#importMsg').textContent = ''; break;
+    case 'copyExport': copyText(exportText(), t); break;
+    case 'downloadExport': {
+      try {
+        const blob = new Blob([exportText()], {type: 'text/plain;charset=utf-8'});
+        const a = document.createElement('a');
+        const name = 'AI视频比赛_' + (tr(st.s.theme) || '未命名').replace(/[\\/:*?"<>|]/g, '') + '.txt';
+        a.href = URL.createObjectURL(blob); a.download = name; document.body.appendChild(a); a.click();
+        setTimeout(() => { URL.revokeObjectURL(a.href); a.remove(); }, 1000);
+      } catch (e) {}
+      break;
+    }
+    case 'resetAll':
+      arm(t, '再点一次确认清空', () => {
+        try { localStorage.removeItem(KEY); } catch (e) {}
+        st = defaults(); alertMsg = ''; $('#alert').hidden = true;
+        renderAll(); goStep(1, true); t.textContent = '清空全部内容'; t.classList.remove('arm');
+      });
+      break;
+  }
+});
+document.addEventListener('keydown', ev => {
+  const p = ev.target.closest && ev.target.closest('.phase');
+  if (p && (ev.key === 'Enter' || ev.key === ' ')) { ev.preventDefault(); p.click(); }
+});
+$('#soundOn').addEventListener('change', e => { st.sound = e.target.checked; save(); if (st.sound) beep(false); });
+$('#help').addEventListener('click', e => { if (e.target === e.currentTarget && e.currentTarget.close) e.currentTarget.close(); });
+
+/* ================= init ================= */
+function renderAll() {
+  renderTpls(); renderBinds(); renderCards(); renderChecks(); renderShots(); renderPhases();
+  $('#soundOn').checked = st.sound !== false;
+  $('#fixes').innerHTML = FIXES.map(([a, b, c]) => `<div class="fix"><b>${esc(a)}</b><span class="sym">${esc(b)}</span><p class="act">${esc(c)}</p></div>`).join('');
+  tick();
+}
+const dl = document.createElement('datalist'); dl.id = 'camList';
+dl.innerHTML = CAM_LIST.map(c => `<option value="${esc(c)}"></option>`).join('');
+document.body.appendChild(dl);
+renderAll();
+goStep(st.step || 1, false);
+setInterval(tick, 1000);
+document.addEventListener('visibilitychange', tick);
+})();
+</script>
+</body>
+</html>
