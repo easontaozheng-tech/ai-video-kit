@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="color-scheme" content="light dark">
-<title>AI视频比赛作战台</title>
+<title>即梦AI视频比赛作战台</title>
 <style>
 :root{
   --paper:#EDF0EB; --sheet:#F8FAF7; --ink:#1C2730; --ink2:#55626A; --rule:#CDD4CF;
@@ -91,6 +91,7 @@ button,input,select,textarea{font:inherit;color:inherit}
 section.step{padding-top:26px}
 h2{font-size:26px;line-height:1.3;margin:0 0 6px;font-weight:700;letter-spacing:.01em}
 h3{font-size:17px;margin:30px 0 8px;font-weight:700}
+h4{font-size:15px;margin:18px 0 6px;font-weight:700}
 .lead{margin:0 0 8px;color:var(--ink2);max-width:40em}
 p{margin:8px 0}
 .muted{color:var(--ink2)}
@@ -102,15 +103,17 @@ p{margin:8px 0}
 input[type=text],input[type=number],textarea,select{width:100%;background:var(--sheet);border:1px solid var(--rule);border-radius:6px;padding:9px 11px;font-size:15px;line-height:1.55}
 textarea{resize:vertical;min-height:72px}
 input:focus,textarea:focus,select:focus{outline:2px solid var(--ink);outline-offset:0;border-color:var(--ink)}
+input:disabled{opacity:.7}
 .theme-input{font-size:22px !important;font-weight:600;padding:12px 14px !important}
 .row{display:flex;flex-wrap:wrap;gap:10px;align-items:center}
 .row>input[type=number]{width:110px}
 .chip{border:1px solid var(--rule);background:var(--sheet);border-radius:999px;padding:4px 12px;font-size:13.5px;cursor:pointer;color:var(--ink)}
 .chip:hover{border-color:var(--ink)}
-.seg{display:inline-flex;border:1px solid var(--rule);border-radius:6px;overflow:hidden;background:var(--sheet)}
+.seg{display:inline-flex;flex-wrap:wrap;border:1px solid var(--rule);border-radius:6px;overflow:hidden;background:var(--sheet)}
 .seg label{position:relative;cursor:pointer}
 .seg input{position:absolute;opacity:0;pointer-events:none}
-.seg span{display:block;padding:7px 16px;font-family:var(--num);font-variant-numeric:tabular-nums;border-right:1px solid var(--rule)}
+.seg span{display:block;padding:7px 16px;border-right:1px solid var(--rule)}
+.seg .num{font-family:var(--num);font-variant-numeric:tabular-nums}
 .seg label:last-child span{border-right:0}
 .seg input:checked+span{background:var(--ink);color:var(--paper)}
 .seg input:focus-visible+span{outline:2px solid var(--ink);outline-offset:-3px}
@@ -132,6 +135,7 @@ input:focus,textarea:focus,select:focus{outline:2px solid var(--ink);outline-off
 .prompt-title{font-weight:700;font-size:15px}
 .prompt-title small{font-weight:400;color:var(--ink2);font-size:13px;margin-left:8px}
 .prompt-body{padding:12px 14px;white-space:pre-wrap;word-break:break-word;font-size:14.5px;line-height:1.8}
+.prompt-where{padding:8px 14px 0;font-size:13px;color:var(--ink2)}
 .gap{background:var(--gapbg);border-radius:3px;padding:1px 5px;font-weight:600}
 .prompt-foot{padding:0 14px 11px;color:var(--amber);font-size:13px}
 .btn{border:1px solid var(--ink);background:transparent;color:var(--ink);border-radius:6px;padding:6px 14px;font-size:14px;cursor:pointer;white-space:nowrap}
@@ -157,6 +161,8 @@ details.fold .prompt{margin:4px 0 6px}
 .rules{margin:4px 0 0;padding-left:20px}
 .rules li{margin:5px 0}
 .formula{white-space:pre-wrap;background:var(--paper);border-radius:4px;padding:10px 12px;font-size:14px;line-height:1.8;margin:8px 0}
+.voice{margin:8px 0;padding-left:20px}
+.voice li{margin:8px 0}
 
 /* checklists */
 .checks{list-style:none;margin:8px 0;padding:0;border-top:1px solid var(--rule)}
@@ -195,9 +201,16 @@ details.fold .prompt{margin:4px 0 6px}
 .shot-body .lbl{display:flex !important;align-items:center;justify-content:space-between;gap:8px}
 .inline-check{font-weight:400;font-size:13px;color:var(--ink2);display:inline-flex;align-items:center;gap:5px;cursor:pointer}
 .inline-check input{accent-color:var(--ink)}
-.refs{display:flex;flex-wrap:wrap;gap:6px 18px;margin:10px 0 4px}
-.segs .seg-row{display:grid;grid-template-columns:92px 1fr;gap:8px;align-items:center;margin:6px 0}
-.segs .seg-row span{font-family:var(--num);font-variant-numeric:tabular-nums;font-size:13.5px;color:var(--ink2)}
+.refs{border-top:1px dashed var(--rule);margin-top:12px;padding-top:10px}
+.refs-title{font-weight:600;font-size:14.5px;margin:0 0 6px}
+.refs-row{display:flex;flex-wrap:wrap;gap:8px 18px;align-items:center}
+.refs-row select{width:auto;padding:4px 8px;font-size:13.5px}
+.refs-row .inline-check select{margin-left:2px}
+.refs-hint{font-size:12.5px;color:var(--ink2);margin:6px 0 0}
+.segs .seg-row{display:grid;grid-template-columns:120px 60px 1fr auto;gap:8px;align-items:center;margin:6px 0}
+.segs .seg-row .rng{font-family:var(--num);font-variant-numeric:tabular-nums;font-size:13.5px;color:var(--ink2);white-space:nowrap}
+.segs .seg-row input[type=number]{padding:6px 6px;font-family:var(--num);font-variant-numeric:tabular-nums}
+.segs-foot{display:flex;align-items:center;gap:10px;font-size:13px;color:var(--ink2)}
 .shot .prompt{margin:12px 0 0;border-left-width:1px}
 .shot .prompt-body{background:var(--paper);border-radius:0 0 4px 4px}
 .count{font-family:var(--num);font-variant-numeric:tabular-nums;font-size:13px;color:var(--ink2);font-weight:400}
@@ -207,6 +220,8 @@ details.fold .prompt{margin:4px 0 6px}
 .lints li::before{content:"";position:absolute;left:3px;top:11px;width:7px;height:7px;border-radius:50%;background:currentColor}
 .lints li.bad{color:var(--tally)}
 .lints li.good{color:var(--go)}
+.lints li.info{color:var(--ink2)}
+.lints li.info::before{background:transparent;border:1.5px solid currentColor;width:6px;height:6px}
 .import-msg{font-size:13.5px;margin:6px 0 0}
 .import-msg.err{color:var(--tally)}
 .import-msg.ok{color:var(--go)}
@@ -249,7 +264,8 @@ dialog.help::backdrop{background:rgba(12,18,22,.55)}
   .criteria{grid-template-columns:1fr}
   .shot-bar{position:static}
   .theme-input{font-size:19px !important}
-  .segs .seg-row{grid-template-columns:1fr;gap:3px}
+  .segs .seg-row{grid-template-columns:64px 1fr auto;gap:4px 8px}
+  .segs .seg-row .rng{grid-column:1/-1}
 }
 @media (prefers-reduced-motion:reduce){*{scroll-behavior:auto !important}}
 </style>
@@ -261,7 +277,7 @@ dialog.help::backdrop{background:rgba(12,18,22,.55)}
 <aside class="slate" id="slate" aria-label="比赛计时">
   <div class="stripes" aria-hidden="true"></div>
   <div class="slate-in">
-    <p class="slate-name">AI视频比赛作战台</p>
+    <p class="slate-name">即梦AI视频比赛作战台</p>
     <div class="slate-top">
       <div class="clock-wrap">
         <p class="clock-label" id="clockLabel">比赛时长</p>
@@ -299,9 +315,9 @@ dialog.help::backdrop{background:rgba(12,18,22,.55)}
   <nav class="steps" aria-label="步骤" id="stepsNav">
     <button class="step-btn" data-go="1" type="button"><span class="n">1</span>设定</button>
     <button class="step-btn" data-go="2" type="button"><span class="n">2</span>出创意</button>
-    <button class="step-btn" data-go="3" type="button"><span class="n">3</span>脚本分镜</button>
+    <button class="step-btn" data-go="3" type="button"><span class="n">3</span>脚本与参考图</button>
     <button class="step-btn" data-go="4" type="button"><span class="n">4</span>镜头工坊</button>
-    <button class="step-btn" data-go="5" type="button"><span class="n">5</span>剪辑包装</button>
+    <button class="step-btn" data-go="5" type="button"><span class="n">5</span>剪辑与声音</button>
     <button class="step-btn" data-go="6" type="button"><span class="n">6</span>自检提交</button>
   </nav>
 
@@ -321,6 +337,15 @@ dialog.help::backdrop{background:rgba(12,18,22,.55)}
     </label>
 
     <div class="field">
+      <span class="lbl">即梦视频模型</span>
+      <div class="seg" role="radiogroup" aria-label="即梦视频模型">
+        <label><input type="radio" name="model" value="2.0" data-bind="model"><span>Seedance 2.0　单段最长15秒</span></label>
+        <label><input type="radio" name="model" value="2.5" data-bind="model"><span>Seedance 2.5　单段最长30秒</span></label>
+      </div>
+      <span class="hint">在即梦“视频生成”的模型下拉框里看能选哪个。选 2.5 时，一段视频里可以切几个镜头；镜头时长、写法和检查规则都会跟着变。不确定就先选 2.0。</span>
+    </div>
+
+    <div class="field">
       <span class="lbl">成片时长（秒）</span>
       <div class="row">
         <input type="number" data-bind="dur" min="10" max="600" inputmode="numeric" aria-label="成片时长（秒）">
@@ -336,10 +361,11 @@ dialog.help::backdrop{background:rgba(12,18,22,.55)}
       <div class="field">
         <span class="lbl">画幅</span>
         <div class="seg" role="radiogroup" aria-label="画幅">
-          <label><input type="radio" name="aspect" value="16:9" data-bind="aspect"><span>16:9</span></label>
-          <label><input type="radio" name="aspect" value="9:16" data-bind="aspect"><span>9:16</span></label>
-          <label><input type="radio" name="aspect" value="1:1" data-bind="aspect"><span>1:1</span></label>
+          <label><input type="radio" name="aspect" value="16:9" data-bind="aspect"><span class="num">16:9</span></label>
+          <label><input type="radio" name="aspect" value="9:16" data-bind="aspect"><span class="num">9:16</span></label>
+          <label><input type="radio" name="aspect" value="1:1" data-bind="aspect"><span class="num">1:1</span></label>
         </div>
+        <span class="hint">即梦生成时，比例要选成一样的。</span>
       </div>
       <label class="field">
         <span class="lbl">比赛总时长（分钟）</span>
@@ -375,7 +401,7 @@ dialog.help::backdrop{background:rgba(12,18,22,.55)}
 
     <div class="criteria" aria-label="选创意的四条标准">
       <div><b>契合主题</b><span>评委看完能立刻说出它和主题的关系吗？</span></div>
-      <div><b>AI 做得出</b><span>画面以单人、单一动作、氛围镜头为主吗？</span></div>
+      <div><b>即梦做得出</b><span>画面以单人、单一动作、氛围镜头为主吗？</span></div>
       <div><b>有记忆点</b><span>有没有一个情绪转折、反转或金句？</span></div>
       <div><b>能展示AI</b><span>能用上参考图、多镜头、音画同步吗？</span></div>
     </div>
@@ -393,13 +419,13 @@ dialog.help::backdrop{background:rgba(12,18,22,.55)}
       <span class="hint">这句话会自动进入后面所有卡片。</span>
     </label>
 
-    <div class="next-row"><button class="btn ghost" type="button" data-go="1">上一步</button><button class="btn primary" type="button" data-go="3">下一步：脚本分镜</button></div>
+    <div class="next-row"><button class="btn ghost" type="button" data-go="1">上一步</button><button class="btn primary" type="button" data-go="3">下一步：脚本与参考图</button></div>
   </section>
 
   <!-- STEP 3 -->
   <section class="step" data-step="3" aria-labelledby="h3s" hidden>
-    <h2 id="h3s">定主角和风格，再出脚本分镜</h2>
-    <p class="lead">卡片按顺序复制给文字AI。卡片 C 的结果填进下面两个框，之后每个镜头都会原样带上。</p>
+    <h2 id="h3s">定主角和风格，做参考图，再出分镜</h2>
+    <p class="lead">卡片 C 的结果填进下面的框，然后用即梦“图片生成”做主角参考图。之后每个镜头都会原样带上主角和风格。</p>
 
     <div data-card="C"></div>
 
@@ -423,15 +449,21 @@ dialog.help::backdrop{background:rgba(12,18,22,.55)}
       <option value="霓虹夜色，冷暖强对比"></option>
       <option value="极简留白，低饱和"></option>
     </datalist>
+    <label class="field">
+      <span class="lbl">主场景（可选）</span>
+      <input type="text" data-bind="scene" placeholder="例如：深夜的旧书房，窗外透进蓝色月光" autocomplete="off">
+      <span class="hint">故事大部分发生在同一个地方时再填，用来做场景参考图。</span>
+    </label>
 
+    <h3>在即梦“图片生成”里做参考图</h3>
+    <p class="small muted">参考图是即梦里保持人物前后一致最有效的办法。生成后下载保存；到视频生成的“全能参考”里，按上传顺序编号：先传主角图（图片1），再传场景图（图片2）。</p>
+    <div data-card="C2"></div>
     <details class="fold">
-      <summary>现场有图片生成工具时：先生成主角参考图</summary>
-      <div class="fold-in">
-        <p class="small muted">用图片工具生成后保存，之后在视频平台作为 @图片1 上传。没有图片工具就跳过，改用第4步的锚点镜头保证一致。</p>
-        <div data-card="C2"></div>
-      </div>
+      <summary>有固定主场景时：场景参考图</summary>
+      <div class="fold-in"><div data-card="C3"></div></div>
     </details>
 
+    <h3>出脚本和分镜</h3>
     <div data-card="D"></div>
     <div data-card="E"></div>
     <div data-card="F"></div>
@@ -443,31 +475,52 @@ dialog.help::backdrop{background:rgba(12,18,22,.55)}
   <!-- STEP 4 -->
   <section class="step" data-step="4" aria-labelledby="h4s" hidden>
     <h2 id="h4s">镜头工坊</h2>
-    <p class="lead">把卡片 E 或 F 的输出整段粘贴进来，自动拆成镜头；每个镜头实时检查常见问题，可逐条复制到视频平台。</p>
+    <p class="lead">把卡片 E 或 F 的输出整段粘贴进来，自动拆成镜头；每个镜头实时检查常见问题，然后逐条复制到即梦“视频生成”。</p>
 
     <details class="fold">
-      <summary>镜头提示词规则速查</summary>
+      <summary>即梦操作和提示词规则速查</summary>
       <div class="fold-in">
-        <div class="formula">【主体】谁或什么，1到2个具体特征
+        <h4>即梦操作要点</h4>
+        <ol class="rules">
+          <li><b>入口：</b>视频生成，选模型，再选“全能参考”。要用参考图、参考视频或音频，都走这个入口。</li>
+          <li><b>上传顺序决定编号：</b>先传主角图，再传场景图，然后视频、音频，最后写提示词。编号按上传顺序，比如第一张图就是 @图片1。</li>
+          <li><b>每个 @ 都写用途：</b>比如“@图片1 作为主角形象参考”。不写用途，模型会把光线、构图一起照搬。</li>
+          <li><b>素材上限（2.0）：</b>图片最多9张、视频3段、音频3段，合计不超过12个；音频用 mp3 或 wav，单段不超过15秒。实际用3到5个素材最稳。</li>
+          <li><b>有音频就别用首尾帧：</b>带音频参考时走全能参考入口；视频时长不能短于音频，否则会被截断。</li>
+          <li><b>首尾帧适合做转场：</b>先用图片生成做开头和结尾两张图，再用首尾帧生成中间的变化。</li>
+          <li><b>接着上一段拍：</b>把上一段成片作为 @视频1，写“从它的结尾接着往下拍”。连续接2次后画质可能下降，再接就重新开一段。</li>
+          <li><b>审核和崩坏：</b>真人写实人脸可能被拦截，改用即梦生成的原创形象或插画风；手部容易变形，让手放稳或不入画。</li>
+          <li><b>Seedance 2.5（如果有）：</b>一段最长30秒，可以在一段里按时间切几个镜头，还能只改画面局部。</li>
+        </ol>
+        <h4>提示词格式</h4>
+        <div class="formula">Seedance 2.0：一段一个镜头
+【主体】谁或什么，1到2个具体特征
 【动作】一条连贯动作，写出物理结果
 【场景】地点加光线，一句话
 【运镜】只写一种运镜，写明终点
 【风格/音频】视觉基调；点名具体声音；写“无配乐”</div>
+        <div class="formula">Seedance 2.5：一段里切几个镜头
+【主体】……
+【场景】……
+镜头1（1到6秒）：景别，运镜，动作
+切镜到 镜头2（7到14秒）：景别，运镜，动作
+【风格/音频】……</div>
+        <h4>六条规则</h4>
         <ol class="rules">
-          <li><b>短。</b>100字以内，最重要的放前面。</li>
+          <li><b>短。</b>2.0 每段100字以内；2.5 按每15秒约100字估算。最重要的放前面。</li>
           <li><b>动词比形容词值钱。</b>不写“绝美、史诗级”，写“停步，呼出一口白气”。</li>
           <li><b>一个镜头一种运镜。</b>要两种就拆成两个镜头。</li>
           <li><b>声音必须写。</b>不写，模型会随机配乐。</li>
-          <li><b>超过8秒写时间轴。</b>按秒分三段写。</li>
+          <li><b>长镜头按时间写。</b>2.0 超过8秒分三段写；2.5 超过15秒拆成2到4个镜头。</li>
           <li><b>每次只改一个变量。</b>只改动作，或只改运镜，再对比。</li>
         </ol>
-        <p class="small muted">锚点镜头法：先只生成一个镜头，把主角、服装、色调调对；之后的镜头都勾选“@视频1 锚点镜头”，并上传这个镜头。参考强度如果可调，保持在70%到80%。</p>
+        <p class="small muted">锚点镜头法：先只生成一个镜头，把主角、服装、色调调对；之后的镜头把它作为 @视频1 上传，用途选“只参考外观和色调”。</p>
       </div>
     </details>
 
     <label class="field">
       <span class="lbl">粘贴AI输出的镜头提示词</span>
-      <textarea id="importBox" rows="5" placeholder="整段粘贴，包含【主体】【动作】【场景】【运镜】【风格/音频】标签即可，分镜表部分不用删"></textarea>
+      <textarea id="importBox" rows="5" placeholder="整段粘贴，包含【主体】【场景】等标签即可，分镜表部分不用删"></textarea>
     </label>
     <div class="add-row">
       <button class="btn primary" type="button" id="importBtn">拆成镜头</button>
@@ -477,28 +530,35 @@ dialog.help::backdrop{background:rgba(12,18,22,.55)}
 
     <div class="shot-bar">
       <span class="tot" id="totals"></span>
-      <button class="btn" type="button" id="copyAllShots">复制全部镜头</button>
+      <button class="btn" type="button" id="copyAllShots">复制全部</button>
     </div>
     <div id="shots"></div>
     <div class="add-row">
       <button class="btn" type="button" id="addShot">添加镜头</button>
     </div>
 
-    <div class="next-row"><button class="btn ghost" type="button" data-go="3">上一步</button><button class="btn primary" type="button" data-go="5">下一步：剪辑包装</button></div>
+    <div class="next-row"><button class="btn ghost" type="button" data-go="3">上一步</button><button class="btn primary" type="button" data-go="5">下一步：剪辑与声音</button></div>
   </section>
 
   <!-- STEP 5 -->
   <section class="step" data-step="5" aria-labelledby="h5s" hidden>
-    <h2 id="h5s">剪辑和包装</h2>
+    <h2 id="h5s">剪辑和声音</h2>
     <p class="lead">生成排队时就开始粗剪。现场的剪辑软件不一定是剪映，下面只用到所有剪辑软件都有的操作。</p>
+
+    <h3>旁白声音从哪来</h3>
+    <p class="small muted">按顺序选第一个能用的。全片只用一个音色。</p>
+    <ol class="voice">
+      <li><b>剪辑软件自带的文字转语音。</b>最省事，音色统一，改词也快。</li>
+      <li><b>即梦“数字人”。</b>上传一张人物图，输入旁白文字，选一个音色生成；剪辑时只用它的声音。每句都用同一个音色。</li>
+      <li><b>让视频自带旁白。</b>在【风格/音频】里写“女声旁白：‘……’”。每段音色可能不一样，先试一条再决定。</li>
+    </ol>
+    <p class="small muted">有人物对着镜头说话时，用即梦的“对口型”或“数字人”：人物要正脸、清晰；配音不能比视频长。</p>
+    <div data-card="H"></div>
 
     <div class="check-head"><h3>剪辑清单</h3><span class="progress" data-progress="edit"></span></div>
     <ul class="checks" data-checks="edit"></ul>
 
-    <h3>有配音工具时</h3>
-    <div data-card="H"></div>
-
-    <p class="small muted">离线软件没有音乐库时：让视频平台生成一段只有配乐的空镜头，剪辑时只取它的音频。</p>
+    <p class="small muted">离线软件没有音乐库时：在即梦生成一段只有配乐的空镜头，剪辑时只取它的音频。</p>
 
     <div class="next-row"><button class="btn ghost" type="button" data-go="4">上一步</button><button class="btn primary" type="button" data-go="6">下一步：自检提交</button></div>
   </section>
@@ -531,7 +591,7 @@ dialog.help::backdrop{background:rgba(12,18,22,.55)}
     <div class="next-row"><button class="btn ghost" type="button" data-go="5">上一步</button><span></span></div>
   </section>
 
-  <p class="foot">内容自动保存在这台设备的浏览器里，不上传任何地方。断网也能用：把这个页面另存为文件即可离线打开。</p>
+  <p class="foot">内容自动保存在这台设备的浏览器里，不上传任何地方。断网也能用：把这个页面另存为文件即可离线打开。即梦的功能和限制以比赛当天的界面为准。</p>
 </div>
 </main>
 </div>
@@ -554,6 +614,10 @@ dialog.help::backdrop{background:rgba(12,18,22,.55)}
 
 /* ================= data ================= */
 const KEY = 'aivk-v1';
+const MODEL = {
+  '2.0': {name: 'Seedance 2.0', max: 15, unit: '镜头'},
+  '2.5': {name: 'Seedance 2.5', max: 30, unit: '片段'}
+};
 const TPL = {
   pangbai: {n:'旁白驱动', s:'一段第一人称独白，画面全用意象镜头', f:'完成度最稳，适合首次参赛', rec:true},
   wujian:  {n:'物件的旅程', s:'以一个物件为主角，串起不同场景', f:'任何主题；不需要人物前后一致'},
@@ -564,11 +628,13 @@ const TPL = {
 };
 const CHECKS = {
   pre: [
-    ['p1','文字AI是哪个，能否联网'],
-    ['p2','视频生成平台是哪个，单段最长几秒，能否上传参考图'],
-    ['p3','有没有图片生成和配音工具'],
-    ['p4','成片时长、画幅、格式和提交方式'],
-    ['p5','剪辑软件能打开，找到导入和导出按钮']
+    ['j1','登录即梦，看视频生成能选哪个模型（Seedance 2.0 还是 2.5），把上面的切换选对'],
+    ['j2','看账号剩余积分，问清会不会补充；每次生成都按秒扣积分'],
+    ['j3','先生成一条5秒的短镜头，记下排队加生成一共多久'],
+    ['j4','找到这几个入口：图片生成；视频生成里的全能参考、首尾帧；数字人'],
+    ['j5','文字AI是哪个，能否联网'],
+    ['j6','成片时长、画幅、格式和提交方式'],
+    ['j7','剪辑软件：找到导入、导出，看有没有文字转语音']
   ],
   edit: [
     ['e1','开场摸一遍剪辑软件：导入、裁剪、加音频、加字幕、导出'],
@@ -592,7 +658,7 @@ const CHECKS = {
   q2: [
     ['q2a','主角和画面风格前后一致'],
     ['q2b','整片一首配乐，没有突兀的自带音乐'],
-    ['q2c','旁白清晰，音量盖过配乐'],
+    ['q2c','旁白清晰，全片一个音色，音量盖过配乐'],
     ['q2d','字幕和标题没有错别字']
   ],
   q3: [
@@ -605,22 +671,25 @@ const CHECKS = {
   ]
 };
 const FIXES = [
-  ['平台不是 Seedance','参数、界面不同','先用一个镜头试生成，确认单段时长和参考图用法；五段式公式照用'],
-  ['生成排队慢','一条要等很久','一次提交多个镜头；等待时写下一条提示词或粗剪'],
-  ['要求只执行一半','写了很多，结果随机缺几条','砍到100字内，关键要求放最前'],
+  ['生成排队慢','一条要等很久','能同时提交就一次提交多条；等待时写下一条提示词或粗剪'],
+  ['积分快用完','余额不够补镜头','停掉试验性的生成，先保开头钩子和结尾；按秒扣积分，非关键镜头缩短时长'],
+  ['要求只执行一半','写了很多，结果随机缺几条','砍短，关键要求放最前'],
+  ['参考图没起作用','人物、场景和参考图对不上','检查 @ 编号是否和上传顺序一致，每个 @ 都写了用途'],
+  ['主角每段不一样','脸、衣服、颜色漂移','每段都传同一张主角参考图，或用锚点镜头；【主体】原样复制主角设定'],
+  ['人脸被审核拦截','提示生成失败或违规','换成即梦图片生成的原创形象，或改成插画、动漫、半写实风格'],
   ['镜头抖动、变卦','运镜来回摇摆','检查是否写了两种运镜，只留一种'],
-  ['主角每段不一样','脸、衣服、颜色漂移','用同一张参考图或锚点镜头；【主体】原样复制主角设定'],
   ['动作崩坏、穿模','多人接触或复杂动作','改成单人、慢动作；用特写、背影、剪影回避'],
-  ['生成被拦截','真人脸或版权角色','换成原创角色或插画风格'],
+  ['手部变形','手指多了或扭曲','让手放在桌面上，或改成手不入画的景别'],
   ['画面文字乱码','招牌、标题是乱码','去掉画面文字要求，文字全部在剪辑里加'],
   ['自带莫名配乐','每段音乐不一样','提示词写“无配乐”；剪辑时把该段音轨静音'],
+  ['声音被截断、口型对不上','配音只出来一半，或嘴型不对','视频时长不能短于音频；用干净人声，语速放慢，人物正脸清晰'],
   ['时间不够','第80分钟还有很多镜头没出','保住开头钩子和结尾，中段合并或删镜头'],
   ['软件崩溃、文件丢失','工程打不开','每完成一个阶段导出一个低清预览版，随时保存']
 ];
 const PHASES = [ // name, start, end (in a 120-min base), output, step
   ['拆题定方案',0,15,'一句话故事和备选方案',2],
   ['脚本与分镜',15,30,'分镜表和全部提示词',3],
-  ['锚点镜头',30,40,'主角与风格锁定',4],
+  ['参考图与锚点',30,40,'主角参考图和锚点镜头',3],
   ['批量生成',40,80,'每个镜头至少1条可用',4],
   ['剪辑与声音',55,95,'粗剪、配乐、旁白',5],
   ['字幕包装自检',95,110,'字幕、片尾、自检表',6],
@@ -628,8 +697,8 @@ const PHASES = [ // name, start, end (in a 120-min base), output, step
 ];
 const ALERTS = [ // base minute, message, hard deadline?
   [15,'方向定死，之后不再换题',true],
-  [30,'分镜表和提示词应已完成，开始做锚点镜头',false],
-  [40,'锚点镜头锁定，开始批量生成',false],
+  [30,'分镜表和提示词应已完成，开始做参考图和锚点镜头',false],
+  [40,'主角和风格锁定，开始批量生成',false],
   [55,'开始粗剪，与生成并行',false],
   [80,'停止新生成，只补关键镜头',true],
   [95,'开始加字幕、片尾，并对照自检表',false],
@@ -650,11 +719,28 @@ const CAM_LIST = ['缓慢推近，止于近景','缓慢推近，止于特写','�
 
 /* ================= state ================= */
 const uid = () => Math.random().toString(36).slice(2, 9);
+function splitSecs(d, n) {
+  d = Math.max(n, d); const base = Math.floor(d / n), rem = d - base * n;
+  return Array.from({length: n}, (_, i) => base + (i >= n - rem ? 1 : 0));
+}
 function newShot(p) {
-  return Object.assign({id:uid(), dur:8, useP:true, subject:'', action:'', scene:'', camera:'', useS:true, style:'', sound:'', noMusic:true, refImg:false, refVid:false, tl:false, segs:['','',''], status:'todo', tries:0}, p || {});
+  const sh = Object.assign({id:uid(), dur:8, useP:true, subject:'', action:'', scene:'', camera:'', useS:true, style:'', sound:'', noMusic:true,
+    refImg:false, refScene:false, vidUse:'', audUse:'', tl:false, segs:[], status:'todo', tries:0}, p || {});
+  // migrate older formats
+  if (sh.refVid && !sh.vidUse) sh.vidUse = 'anchor';
+  delete sh.refVid;
+  const raw = Array.isArray(sh.segs) ? sh.segs : [];
+  sh.segs = raw.map(x => typeof x === 'string' ? {sec: 0, text: x} : {sec: parseInt(x.sec, 10) || 0, text: x.text || ''});
+  if (sh.segs.length && sh.segs.some(g => !g.sec)) {
+    const secs = splitSecs(parseInt(sh.dur, 10) || 8, sh.segs.length);
+    sh.segs.forEach((g, i) => { if (!g.sec) g.sec = secs[i]; });
+  }
+  if (sh.tl && !sh.segs.some(g => g.text.trim())) sh.tl = false;
+  if (sh.tl) sh.dur = sh.segs.reduce((a, g) => a + g.sec, 0);
+  return sh;
 }
 function defaults() {
-  return {s:{theme:'', dur:60, aspect:'16:9', total:120, domain:'', tpl:'pangbai', idea:'', story:'', protagonist:'', style:''},
+  return {s:{theme:'', model:'2.0', dur:60, aspect:'16:9', total:120, domain:'', tpl:'pangbai', idea:'', story:'', protagonist:'', style:'', scene:''},
           shots:[newShot()], checks:{}, timer:{start:null}, fired:{}, step:1, sound:true};
 }
 function load() {
@@ -691,6 +777,8 @@ const toHtml = t => esc(t).replace(/⟦(.*?)⟧/g, '<span class="gap">$1</span>'
 const missing = t => Array.from(new Set((t.match(/⟦(.*?)⟧/g) || []).map(x => x.slice(1, -1))));
 const durNum = () => { const n = parseInt(st.s.dur, 10); return n > 0 ? n : 0; };
 const totalMin = () => { const n = parseInt(st.s.total, 10); return n >= 10 ? n : 120; };
+const is25 = () => st.s.model === '2.5';
+const M = () => MODEL[st.s.model] || MODEL['2.0'];
 const sc = x => Math.round(x * totalMin() / 120);
 function fmt(ms) {
   const neg = ms < 0; ms = Math.abs(ms);
@@ -724,30 +812,38 @@ async function copyText(text, btn) {
 }
 
 /* ================= prompt cards ================= */
+function videoLine(s) {
+  return s.model === '2.5'
+    ? '视频用即梦 Seedance 2.5 生成：一段最长30秒，一段里可以按时间切几个镜头'
+    : '视频用即梦 Seedance 2.0 生成：一段4到15秒，一段一个镜头';
+}
 const CARDS = {
-  A: {t:'卡片 A', sub:'出10个创意', b: s => {
+  A: {t:'卡片 A', sub:'出10个创意', where:'复制给文字AI', b: s => {
     const tp = TPL[s.tpl] && s.tpl ? TPL[s.tpl] : null;
     const dm = tr(s.domain);
     return `你是一名获奖短片导演，也是AI视频比赛的评委。比赛主题是「${G(s.theme,'主题')}」，成片约${G(s.dur,'秒数')}秒，画幅${s.aspect}。
-视频由 Seedance 生成：单个镜头4到15秒，擅长单人、单一动作、氛围镜头；不擅长多人肢体互动，也不擅长在画面里生成文字。
+${videoLine(s)}。它擅长单人、单一动作、氛围镜头；不擅长多人肢体互动，也不擅长在画面里生成文字；真人写实人脸容易被审核拦截。
 请从三个角度构思：字面（主题最直接的画面）、反转（反着理解，或从意想不到的对象切入）、身边（日常生活${dm ? '或「' + dm + '」领域' : ''}里的人和事）。${dm ? '\n至少3个创意从「' + dm + '」切入。' : ''}${tp ? '\n优先使用「' + tp.n + '」结构：' + tp.s + '。' : ''}
 给出10个创意，每个包含：一句话故事、核心画面、情绪转折、为什么契合主题。
 然后按四项各打1到5分，并按总分排序：契合主题、AI可实现、有记忆点、能展示AI能力。`;
   }},
-  B: {t:'卡片 B', sub:'评委挑刺', b: s =>
+  B: {t:'卡片 B', sub:'评委挑刺', where:'复制给文字AI', b: s =>
 `现在你是最挑剔的评委，比赛主题是「${G(s.theme,'主题')}」。
 针对下面这个创意，指出3个最可能扣分的地方，各给一个改法。
 创意：${G(s.idea,'选中的创意')}
 最后给出改进后的一句话故事，30字以内。`},
-  C: {t:'卡片 C', sub:'主角设定', b: s =>
+  C: {t:'卡片 C', sub:'主角设定', where:'复制给文字AI', b: s =>
 `故事：${G(s.story,'一句话故事')}
 为这个故事的主角（人或物）写一段固定外观描述，50字以内：年龄或材质、发型或形状、服装颜色和材质、一个标志性细节。
 ${tr(s.style) ? '画面风格已定为「' + tr(s.style) + '」，不用再写风格。' : '再写一行统一的画面风格描述，20字以内，包括色调和质感。'}
-不要使用真人明星或已有的动漫、影视角色。之后每个镜头都会原样复制这段描述。`},
-  C2: {t:'卡片 C2', sub:'主角参考图（给图片工具）', b: s =>
+主角用原创形象，不要真人明星或已有的动漫、影视角色。之后每个镜头都会原样复制这段描述。`},
+  C2: {t:'卡片 C2', sub:'主角参考图', where:'复制到即梦“图片生成”，比例选16:9', b: s =>
 `${G(s.protagonist,'主角设定')}。${G(s.style,'统一风格')}。
 角色设定图：纯浅灰背景，同一主角的正面、侧面、背面三个视角并排，完整入画，光线均匀，画面中不要任何文字。`},
-  D: {t:'卡片 D', sub:'脚本', b: s => {
+  C3: {t:'卡片 C3', sub:'场景参考图', where:'复制到即梦“图片生成”，比例与成片一致', b: s =>
+`${G(s.scene,'主场景')}。${G(s.style,'统一风格')}。
+空镜，画面中没有人物，不要任何文字，画幅${s.aspect}。`},
+  D: {t:'卡片 D', sub:'脚本', where:'复制给文字AI', b: s => {
     const tp = TPL[s.tpl] && s.tpl ? TPL[s.tpl] : null;
     const d = durNum();
     return `比赛主题是「${G(s.theme,'主题')}」。基于一句话故事「${G(s.story,'一句话故事')}」，写一个约${G(s.dur,'秒数')}秒的短片脚本。
@@ -755,52 +851,87 @@ ${tp ? '叙事结构：' + tp.n + '，' + tp.s + '。\n' : ''}节奏：0到3秒�
 输出旁白全文，以及每句旁白对应的画面。每句旁白不超过15个字，旁白总字数不超过${G(d ? d * 4 : '', '字数上限')}字。
 画面以单人、单一动作、氛围镜头为主；不要多人肢体接触，不要在画面里出现文字。`;
   }},
-  E: {t:'卡片 E', sub:'分镜表和视频提示词', b: s => {
+  E: {t:'卡片 E', sub:'分镜和视频提示词', where:'复制给文字AI，结果整段粘贴到第4步', b: s => {
     const d = durNum();
+    const P = tr(s.protagonist), S = tr(s.style);
+    const subj = P || '画面里的主要对象，1到2个具体特征';
+    const sty = S || '统一的视觉基调';
+    const rule1 = P ? '主角出场时，【主体】一字不改地复制上面的主角设定；没有主角时，【主体】写画面里的主要对象。' : '【主体】写画面里的主要对象，同一对象在各段中的描述保持一致。';
+    const rule4 = S ? '【风格/音频】开头一字不改地复制统一风格。' : '所有段落的视觉基调保持一致。';
+    if (s.model === '2.5') {
+      const n = d ? Math.max(2, Math.round(d / 20)) : '';
+      return `把上面的脚本拆成视频片段，总时长约${G(s.dur,'秒数')}秒，分成${G(n,'段数')}段左右，画幅${s.aspect}。${videoLine(s)}。
+第一步，输出分镜表，每个镜头一行：片段号｜镜号｜时长｜景别｜画面内容｜声音｜对应旁白。
+第二步，逐段输出可直接复制的视频提示词，严格按下面格式。每段2到4个镜头，字数按每15秒约100字控制：
+片段1（20秒）
+【主体】${subj}
+【场景】地点加光线
+镜头1（1到6秒）：景别，一种运镜，动作
+切镜到 镜头2（7到14秒）：景别，一种运镜，动作
+切镜到 镜头3（15到20秒）：景别，一种运镜，动作
+【风格/音频】${sty}；点名具体声音；结尾写“无配乐”
+规则：
+1. ${rule1}
+2. 每个镜头只用一种运镜，时间连续不重叠，加起来等于这一段的秒数。
+3. 不出现多人肢体接触，不在画面里生成文字，不使用真人明星或已有角色。
+4. ${rule4}`;
+    }
     const n = d ? Math.max(3, Math.round(d / 9)) : '';
-    return `把上面的脚本拆成分镜，总时长约${G(s.dur,'秒数')}秒，镜头数${G(n,'镜头数')}个左右，画幅${s.aspect}。
+    return `把上面的脚本拆成分镜，总时长约${G(s.dur,'秒数')}秒，镜头数${G(n,'镜头数')}个左右，画幅${s.aspect}。${videoLine(s)}。
 第一步，输出分镜表，每个镜头一行：镜号｜时长｜景别｜画面内容｜声音｜对应旁白。时长在4到15秒之间，优先8到10秒。
 第二步，逐个镜头输出可直接复制的视频提示词，严格按下面格式，每条不超过100字：
 镜头1（8秒）
-【主体】${tr(s.protagonist) || '画面里的主要对象，1到2个具体特征'}
+【主体】${subj}
 【动作】一条连贯动作，写出物理结果
 【场景】地点加光线
 【运镜】只写一种运镜，写明终点，例如“缓慢推近，止于近景”
-【风格/音频】${tr(s.style) || '统一的视觉基调'}；点名具体声音；结尾写“无配乐”
+【风格/音频】${sty}；点名具体声音；结尾写“无配乐”
 时长超过8秒的镜头，【动作】换成三段时间轴，每段一行，例如：
 【动作】
 1到3秒：……
 4到6秒：……
 7到9秒：……
 规则：
-1. ${tr(s.protagonist) ? '主角出场的镜头，【主体】一字不改地复制上面的主角设定；没有主角的镜头，【主体】写画面里的主要对象。' : '【主体】写画面里的主要对象，同一对象在各镜头中描述保持一致。'}
+1. ${rule1}
 2. 一个镜头只用一种运镜。
 3. 不出现多人肢体接触，不在画面里生成文字，不使用真人明星或已有角色。
-4. ${tr(s.style) ? '【风格/音频】开头一字不改地复制统一风格。' : '所有镜头的视觉基调保持一致。'}`;
+4. ${rule4}`;
   }},
-  F: {t:'卡片 F', sub:'分镜自检', b: s =>
-`逐个镜头检查上面的视频提示词：
+  F: {t:'卡片 F', sub:'分镜自检', where:'复制给文字AI', b: s => {
+    const P = tr(s.protagonist);
+    const c3 = P ? '主角出场时，【主体】是否与「' + P + '」完全一致' : '同一对象在各段中的描述是否一致';
+    if (s.model === '2.5') return `逐段检查上面的视频提示词：
+1. 每段是否在30秒以内，镜头时间是否连续、加起来等于这一段的秒数
+2. 每个镜头是否只用了一种运镜
+3. ${c3}
+4. 是否有多人肢体接触或画面文字
+5. 字数是否按每15秒约100字控制
+6. 所有片段加起来是否在${G(s.dur,'秒数')}秒左右，误差不超过5秒
+列出问题，然后按原格式输出修改后的全部片段提示词。`;
+    return `逐个镜头检查上面的视频提示词：
 1. 是否超过100字
 2. 是否写了两种运镜
-3. ${tr(s.protagonist) ? '主角镜头的【主体】是否与「' + tr(s.protagonist) + '」完全一致' : '同一对象在各镜头中的描述是否一致'}
+3. ${c3}
 4. 是否有多人肢体接触或画面文字
 5. 超过8秒的镜头，【动作】是否写成了三段时间轴
 6. 所有镜头时长加起来是否在${G(s.dur,'秒数')}秒左右，误差不超过5秒
-列出问题，然后按原格式输出修改后的全部镜头提示词。`},
-  G: {t:'卡片 G', sub:'标题和金句', b: s =>
+列出问题，然后按原格式输出修改后的全部镜头提示词。`;
+  }},
+  G: {t:'卡片 G', sub:'标题和金句', where:'复制给文字AI', b: s =>
 `为这个短片起5个标题，每个不超过10个字；再写3句结尾金句，每句不超过15个字。
 要呼应主题「${G(s.theme,'主题')}」和故事「${G(s.story,'一句话故事')}」，具体，不说空话。`},
-  H: {t:'卡片 H', sub:'配音稿', b: s =>
+  H: {t:'卡片 H', sub:'配音稿', where:'复制给文字AI，结果用于配音', b: s =>
 `把下面的旁白整理成配音稿：每句单独一行，用“/”标出停顿，在括号里标出语气，例如（平静）（上扬）（停两秒）。总时长控制在${G(s.dur,'秒数')}秒左右。
 旁白：
 （在这里粘贴旁白全文）`}
 };
 
-function promptBlock(id, title, sub, text) {
+function promptBlock(id, c, text) {
   const miss = missing(text);
   return `<div class="prompt">
-    <div class="prompt-head"><span class="prompt-title">${esc(title)}<small>${esc(sub)}</small></span>
+    <div class="prompt-head"><span class="prompt-title">${esc(c.t)}<small>${esc(c.sub)}</small></span>
     <button class="btn sm" type="button" data-copy-card="${id}">复制</button></div>
+    ${c.where ? `<div class="prompt-where">${esc(c.where)}</div>` : ''}
     <div class="prompt-body">${toHtml(text)}</div>
     ${miss.length ? `<div class="prompt-foot">还没填：${miss.map(esc).join('、')}。空着也能复制，复制后会显示为 ____。</div>` : ''}
   </div>`;
@@ -808,7 +939,7 @@ function promptBlock(id, title, sub, text) {
 function renderCards() {
   $$('[data-card]').forEach(el => {
     const c = CARDS[el.dataset.card];
-    el.innerHTML = promptBlock(el.dataset.card, c.t, c.sub, c.b(st.s));
+    el.innerHTML = promptBlock(el.dataset.card, c, c.b(st.s));
   });
 }
 
@@ -847,75 +978,106 @@ function renderProgress() {
 }
 
 /* ================= shots ================= */
-function segLabels(d) {
-  const a = Math.round(d / 3), b = Math.round(2 * d / 3);
-  return ['1到' + a + '秒', (a + 1) + '到' + b + '秒', (b + 1) + '到' + d + '秒'];
-}
 function shotParts(sh) {
   const subject = sh.useP ? tr(st.s.protagonist) : tr(sh.subject);
   const style = sh.useS ? tr(st.s.style) : tr(sh.style);
   return {subject, style};
 }
+function segRanges(sh) {
+  let t = 0;
+  return sh.segs.map(g => { const a = t + 1, b = t + (parseInt(g.sec, 10) || 0); t = b; return a + '到' + b + '秒'; });
+}
+function refLines(sh) {
+  const out = []; let k = 0;
+  if (sh.refImg) { k++; out.push(`@图片${k} 作为主角形象参考，脸、发型和服装保持一致`); }
+  if (sh.refScene) { k++; out.push(`@图片${k} 作为场景参考，环境和光线保持一致`); }
+  if (sh.vidUse === 'anchor') out.push('@视频1 只参考人物外观和色调');
+  if (sh.vidUse === 'prev') out.push('@视频1 是上一段，从它的结尾接着往下拍');
+  if (sh.vidUse === 'cam') out.push('@视频1 只参考运镜和动作节奏');
+  if (sh.audUse === 'voice') out.push('@音频1 作为配音，人物口型与它对齐');
+  if (sh.audUse === 'music') out.push('@音频1 作为背景音乐，画面节奏跟着音乐走');
+  return out;
+}
 function composeShot(sh) {
   const {subject, style} = shotParts(sh);
-  const lines = [];
-  if (sh.refImg) lines.push('@图片1 = 主角形象（脸和服装保持一致）');
-  if (sh.refVid) lines.push('@视频1 = 锚点镜头，只参考人物外观和色调');
+  const v25 = is25();
+  const lines = refLines(sh);
   lines.push('【主体】' + (subject || '⟦' + (sh.useP ? '主角设定（第3步）' : '主体') + '⟧'));
-  const d = parseInt(sh.dur, 10) || 8;
-  if (sh.tl && d >= 6) {
-    const L = segLabels(d);
-    sh.segs.forEach((t, i) => lines.push(L[i] + '：' + G(t, '第' + (i + 1) + '段画面')));
+  const R = segRanges(sh);
+  const segOut = sh.segs.map((g, i) => v25
+    ? (i ? '切镜到 ' : '') + '镜头' + (i + 1) + '（' + R[i] + '）：' + G(g.text, '镜头' + (i + 1) + '画面')
+    : R[i] + '：' + G(g.text, '第' + (i + 1) + '段画面'));
+  if (v25) {
+    lines.push('【场景】' + G(sh.scene, '场景'));
+    if (sh.tl) lines.push(...segOut); else lines.push('【动作】' + G(sh.action, '动作'));
+    if (tr(sh.camera) || !sh.tl) lines.push('【运镜】' + G(sh.camera, '运镜'));
   } else {
-    lines.push('【动作】' + G(sh.action, '动作'));
+    if (sh.tl) { lines.push('【动作】'); lines.push(...segOut); } else lines.push('【动作】' + G(sh.action, '动作'));
+    lines.push('【场景】' + G(sh.scene, '场景'));
+    lines.push('【运镜】' + G(sh.camera, '运镜'));
   }
-  lines.push('【场景】' + G(sh.scene, '场景'));
-  lines.push('【运镜】' + G(sh.camera, '运镜'));
   let tail = [style, tr(sh.sound)].filter(Boolean).join('；');
-  if (sh.noMusic) tail = tail ? tail.replace(/[，,；;。]+$/, '') + '，无配乐' : '无配乐';
+  if (sh.noMusic && sh.audUse !== 'music') tail = tail ? tail.replace(/[，,；;。]+$/, '') + '，无配乐' : '无配乐';
   if (sh.useS && !tr(st.s.style)) tail = '⟦统一风格（第3步）⟧' + (tail ? '；' + tail : '');
   lines.push('【风格/音频】' + (tail || '⟦声音⟧'));
   return lines.join('\n');
 }
+function shotDur(sh) { return sh.tl ? sh.segs.reduce((a, g) => a + (parseInt(g.sec, 10) || 0), 0) : (parseInt(sh.dur, 10) || 0); }
 function shotLen(sh) {
   const {subject, style} = shotParts(sh);
-  const body = [subject, sh.tl ? sh.segs.join('') : sh.action, sh.scene, sh.camera, style, sh.sound, sh.noMusic ? '无配乐' : ''].join('');
+  const body = [subject, sh.tl ? sh.segs.map(g => g.text).join('') : sh.action, sh.scene, sh.camera, style, sh.sound, (sh.noMusic && sh.audUse !== 'music') ? '无配乐' : ''].join('');
   return body.replace(/\s/g, '').length;
 }
+function shotLimit(sh) { return is25() ? 100 * Math.max(1, Math.ceil(shotDur(sh) / 15)) : 100; }
 function camKinds(text) { return CAM.filter(([, re]) => re.test(text)).map(([n]) => n); }
 function lintShot(sh) {
   const out = [];
+  const v25 = is25(), mx = M().max;
   const {subject, style} = shotParts(sh);
-  const d = parseInt(sh.dur, 10);
-  const actionText = sh.tl ? sh.segs.join(' ') : sh.action;
+  const d = shotDur(sh);
+  const actionText = sh.tl ? sh.segs.map(g => g.text).join(' ') : sh.action;
   const all = [subject, actionText, sh.scene, sh.camera, style, sh.sound].join(' ');
   if (!subject) out.push(['warn', sh.useP ? '还没填主角设定（第3步），或取消勾选“用主角设定”自己写主体' : '缺【主体】']);
-  if (!tr(actionText)) out.push(['warn', '缺动作']);
-  if (!tr(sh.camera)) out.push(['warn', '缺运镜，模型会自己乱选镜头']);
-  if (!(d >= 4 && d <= 15)) out.push(['bad', '时长要在4到15秒之间']);
-  const len = shotLen(sh);
-  if (len > 100) out.push(['bad', '共' + len + '字，超过100字，后面的要求容易被忽略，先砍形容词']);
-  const kinds = camKinds(sh.tl ? sh.camera + ' ' + sh.segs.join(' ') : sh.camera);
-  if (kinds.length > 1) out.push(['bad', '可能写了两种运镜（' + kinds.join('、') + '），只留一种，或拆成两个镜头']);
+  if (sh.tl) sh.segs.forEach((g, i) => { if (!tr(g.text)) out.push(['warn', (v25 ? '镜头' : '第') + (i + 1) + (v25 ? '' : '段') + '还没写画面']); });
+  else if (!tr(sh.action)) out.push(['warn', '缺动作']);
+  if (!tr(sh.camera) && !(v25 && sh.tl)) out.push(['warn', '缺运镜，模型会自己乱选镜头']);
+  if (!(d >= 4 && d <= mx)) out.push(['bad', `时长要在4到${mx}秒之间（${M().name}）`]);
+  const len = shotLen(sh), lim = shotLimit(sh);
+  if (len > lim) out.push(['bad', `共${len}字，超过${lim}字，后面的要求容易被忽略，先砍形容词`]);
+  if (v25 && sh.tl) {
+    sh.segs.forEach((g, i) => { const k = camKinds(g.text); if (k.length > 1) out.push(['bad', `镜头${i + 1}可能写了两种运镜（${k.join('、')}），只留一种`]); });
+    if (tr(sh.camera) && sh.segs.some(g => camKinds(g.text).length)) out.push(['warn', '整体运镜和镜头里的运镜可能冲突，只保留一处']);
+    if (sh.segs.length > 4) out.push(['warn', '一段里超过4个镜头容易乱，建议拆成两段']);
+  } else {
+    const kinds = camKinds(sh.tl ? sh.camera + ' ' + actionText : sh.camera);
+    if (kinds.length > 1) out.push(['bad', '可能写了两种运镜（' + kinds.join('、') + '），只留一种，或拆成两个镜头']);
+  }
   if (!sh.tl && /镜头|运镜|机位/.test(sh.action + sh.scene)) out.push(['warn', '动作或场景里提到了镜头，运镜只写在【运镜】里']);
   if (/拥抱|握手|打斗|打架|亲吻|接吻|搏斗|牵手|击掌|扭打|格斗|摔跤|交手|搀扶/.test(all)) out.push(['bad', '有多人肢体接触，容易穿模，改成单人或用背影、剪影回避']);
   const textCheck = all.replace(/无文字|不出现文字|没有文字|无字幕|不要文字|不生成文字|不要任何文字/g, '');
   if (/字幕|文字|标语|写着|标题|logo|招牌上|横幅/i.test(textCheck)) out.push(['bad', '要求画面里出现文字，容易乱码，文字放到剪辑里加']);
-  if (/明星|网红|名人/.test(all)) out.push(['bad', '真人明星会被平台拦截，换成原创角色']);
-  if (!tr(sh.sound) && !sh.noMusic && !/声|音|响/.test(style)) out.push(['warn', '没写声音，也没勾“无配乐”，模型会随机配乐']);
-  if (d > 8 && !sh.tl) out.push(['warn', '超过8秒，建议打开“按时间轴写”']);
+  if (/明星|网红|名人|真人照片/.test(all)) out.push(['bad', '真人可能被审核拦截，换成原创形象']);
+  if (!tr(sh.sound) && !sh.noMusic && sh.audUse !== 'music' && !/声|音|响/.test(style)) out.push(['warn', '没写声音，也没勾“无配乐”，模型会随机配乐']);
+  if (!v25 && d > 8 && !sh.tl) out.push(['warn', '超过8秒，建议打开“按时间轴写”']);
+  if (v25 && d > 15 && !sh.tl) out.push(['warn', '超过15秒，建议打开“按镜头分段”，拆成2到4个镜头']);
   if (sh.tries >= 3 && sh.status !== 'ok') out.push(['bad', '已经试了' + sh.tries + '次，换个镜头设计，别死磕']);
-  if (!out.length) out.push(['good', '检查通过']);
+  const hasIssue = out.length > 0;
+  if (sh.audUse) out.push(['info', '视频时长不能短于这段音频，否则会被截断' + (v25 ? '' : '；2.0 的音频单段不超过15秒') + '。带音频时用全能参考入口，不用首尾帧。']);
+  if (sh.useP && tr(st.s.protagonist) && !sh.refImg) out.push(['info', '做好主角参考图后，勾上“主角图”，人物更稳']);
+  if (sh.refImg && sh.refScene) out.push(['info', '在即梦按顺序上传：先主角图，再场景图']);
+  if (!hasIssue) out.unshift(['good', '检查通过']);
   return out;
 }
 const STATUS = [['todo','待生成'],['sent','已提交'],['ok','可用'],['drop','放弃']];
 function shotHtml(sh, i) {
-  const d = parseInt(sh.dur, 10) || 8;
-  const L = segLabels(Math.max(d, 6));
-  return `<article class="shot" data-id="${sh.id}" data-status="${sh.status}" aria-label="镜头${i + 1}">
+  const v25 = is25(), unit = M().unit;
+  const d = shotDur(sh);
+  const R = segRanges(sh);
+  const tlLabel = v25 ? '按镜头分段' : '按时间轴写';
+  return `<article class="shot" data-id="${sh.id}" data-status="${sh.status}" aria-label="${unit}${i + 1}">
   <div class="shot-head">
-    <span class="shot-no">镜头 ${i + 1}</span>
-    <label class="dur"><input type="number" min="4" max="15" data-f="dur" value="${esc(sh.dur)}" aria-label="镜头时长">秒</label>
+    <span class="shot-no">${unit} ${i + 1}</span>
+    <label class="dur"><input type="number" min="4" max="${M().max}" data-f="dur" value="${esc(d)}" aria-label="时长"${sh.tl ? ' disabled title="按各段秒数自动相加"' : ''}>秒</label>
     <select data-f="status" aria-label="状态">${STATUS.map(([v, n]) => `<option value="${v}"${sh.status === v ? ' selected' : ''}>${n}</option>`).join('')}</select>
     <span class="tries${sh.tries >= 3 ? ' hot' : ''}">已试 <b>${sh.tries}</b> 次 <button class="icon" type="button" data-act="try" title="生成一次就点一下">+1</button></span>
     <span class="shot-tools">
@@ -929,24 +1091,25 @@ function shotHtml(sh, i) {
     <div class="field">
       <span class="lbl">主体 <label class="inline-check"><input type="checkbox" data-f="useP"${sh.useP ? ' checked' : ''}> 用主角设定</label></span>
       ${sh.useP
-        ? `<p class="small muted" style="margin:0">${tr(st.s.protagonist) ? esc(st.s.protagonist) : '第3步还没填主角设定'}</p>`
+        ? `<p class="small muted" style="margin:0" data-show="protagonist">${tr(st.s.protagonist) ? esc(st.s.protagonist) : '第3步还没填主角设定'}</p>`
         : `<input type="text" data-f="subject" value="${esc(sh.subject)}" placeholder="例如：一盏老式黄铜台灯，灯罩有划痕">`}
     </div>
     <div class="field">
-      <span class="lbl">${sh.tl ? '画面时间轴' : '动作'} ${d >= 6 ? `<label class="inline-check"><input type="checkbox" data-f="tl"${sh.tl ? ' checked' : ''}> 按时间轴写</label>` : ''}</span>
-      ${sh.tl && d >= 6
-        ? `<div class="segs">${sh.segs.map((t, k) => `<div class="seg-row"><span>${L[k]}</span><input type="text" data-f="seg${k}" value="${esc(t)}" aria-label="${L[k]}"></div>`).join('')}</div>`
+      <span class="lbl">${sh.tl ? (v25 ? '镜头分段' : '画面时间轴') : '动作'} <label class="inline-check"><input type="checkbox" data-f="tl"${sh.tl ? ' checked' : ''}> ${tlLabel}</label></span>
+      ${sh.tl
+        ? `<div class="segs">${sh.segs.map((g, k) => `<div class="seg-row"><span class="rng">${v25 ? '镜头' + (k + 1) + '　' : ''}${R[k]}</span><input type="number" min="1" max="30" data-f="segsec" data-k="${k}" value="${esc(g.sec)}" aria-label="第${k + 1}段秒数"><input type="text" data-f="segtext" data-k="${k}" value="${esc(g.text)}" placeholder="${v25 ? '景别，一种运镜，动作' : '这几秒的画面'}" aria-label="第${k + 1}段画面"><button class="icon" type="button" data-act="segdel" data-k="${k}"${sh.segs.length <= 2 ? ' disabled' : ''}>删</button></div>`).join('')}
+            <div class="segs-foot"><button class="icon" type="button" data-act="segadd">添加一段</button><span>中间的数字是秒数，${unit}总时长自动相加</span></div></div>`
         : `<input type="text" data-f="action" value="${esc(sh.action)}" placeholder="例如：灯泡闪了两下后亮起，灰尘在光束里缓缓飘落">`}
     </div>
     <div class="grid2">
       <label class="field"><span class="lbl">场景</span><input type="text" data-f="scene" value="${esc(sh.scene)}" placeholder="例如：深夜的旧书房，窗外透进蓝色月光"></label>
-      <label class="field"><span class="lbl">运镜</span><input type="text" data-f="camera" list="camList" value="${esc(sh.camera)}" placeholder="例如：缓慢推近，止于特写"></label>
+      <label class="field"><span class="lbl">${v25 && sh.tl ? '整体运镜（可空）' : '运镜'}</span><input type="text" data-f="camera" list="camList" value="${esc(sh.camera)}" placeholder="${v25 && sh.tl ? '各镜头的运镜写在上面每一段里' : '例如：缓慢推近，止于特写'}"></label>
     </div>
     <div class="grid2">
       <div class="field">
         <span class="lbl">风格 <label class="inline-check"><input type="checkbox" data-f="useS"${sh.useS ? ' checked' : ''}> 用统一风格</label></span>
         ${sh.useS
-          ? `<p class="small muted" style="margin:0">${tr(st.s.style) ? esc(st.s.style) : '第3步还没填统一风格'}</p>`
+          ? `<p class="small muted" style="margin:0" data-show="style">${tr(st.s.style) ? esc(st.s.style) : '第3步还没填统一风格'}</p>`
           : `<input type="text" data-f="style" list="styleList" value="${esc(sh.style)}" placeholder="例如：胶片质感，暖黄与冷蓝对比">`}
       </div>
       <div class="field">
@@ -955,35 +1118,62 @@ function shotHtml(sh, i) {
       </div>
     </div>
     <div class="refs">
-      <label class="inline-check"><input type="checkbox" data-f="refImg"${sh.refImg ? ' checked' : ''}> 引用 @图片1 主角形象</label>
-      <label class="inline-check"><input type="checkbox" data-f="refVid"${sh.refVid ? ' checked' : ''}> 引用 @视频1 锚点镜头</label>
+      <p class="refs-title">全能参考素材</p>
+      <div class="refs-row">
+        <label class="inline-check"><input type="checkbox" data-f="refImg"${sh.refImg ? ' checked' : ''}> 主角图</label>
+        <label class="inline-check"><input type="checkbox" data-f="refScene"${sh.refScene ? ' checked' : ''}> 场景图</label>
+        <label class="inline-check">视频
+          <select data-f="vidUse" aria-label="视频参考用途">
+            <option value=""${!sh.vidUse ? ' selected' : ''}>不用</option>
+            <option value="anchor"${sh.vidUse === 'anchor' ? ' selected' : ''}>锚点镜头：只参考外观和色调</option>
+            <option value="prev"${sh.vidUse === 'prev' ? ' selected' : ''}>上一段：接着结尾拍</option>
+            <option value="cam"${sh.vidUse === 'cam' ? ' selected' : ''}>只参考运镜</option>
+          </select></label>
+        <label class="inline-check">音频
+          <select data-f="audUse" aria-label="音频参考用途">
+            <option value=""${!sh.audUse ? ' selected' : ''}>不用</option>
+            <option value="voice"${sh.audUse === 'voice' ? ' selected' : ''}>配音：对口型</option>
+            <option value="music"${sh.audUse === 'music' ? ' selected' : ''}>背景音乐</option>
+          </select></label>
+      </div>
     </div>
     <div class="shot-out"></div>
   </div>
 </article>`;
 }
 function renderShotOut(sh) {
-  const el = $(`.shot[data-id="${sh.id}"] .shot-out`);
-  if (!el) return;
+  const art = $(`.shot[data-id="${sh.id}"]`);
+  if (!art) return;
+  const el = $('.shot-out', art);
   const text = composeShot(sh);
-  const len = shotLen(sh);
+  const len = shotLen(sh), lim = shotLimit(sh);
   const lints = lintShot(sh);
   el.innerHTML = `<div class="prompt">
-    <div class="prompt-head"><span class="prompt-title">视频提示词 <span class="count${len > 100 ? ' over' : ''}">${len}/100字</span></span>
+    <div class="prompt-head"><span class="prompt-title">视频提示词 <span class="count${len > lim ? ' over' : ''}">${len}/${lim}字</span></span>
     <button class="btn sm primary" type="button" data-act="copy">复制</button></div>
     <div class="prompt-body">${toHtml(text)}</div></div>
-    <ul class="lints">${lints.map(([lv, m]) => `<li class="${lv === 'bad' ? 'bad' : lv === 'good' ? 'good' : ''}">${esc(m)}</li>`).join('')}</ul>`;
-  const art = el.closest('.shot');
+    <ul class="lints">${lints.map(([lv, m]) => `<li class="${lv === 'warn' ? '' : lv}">${esc(m)}</li>`).join('')}</ul>`;
   art.dataset.status = sh.status;
+  // keep head duration and ranges in sync without rebuilding inputs
+  const durIn = $('[data-f="dur"]', art);
+  if (sh.tl && durIn) durIn.value = shotDur(sh);
+  if (sh.tl) { const R = segRanges(sh); $$('.seg-row .rng', art).forEach((n, k) => { n.textContent = (is25() ? '镜头' + (k + 1) + '　' : '') + R[k]; }); }
+}
+function rerenderShot(sh, focusSel) {
+  const art = $(`.shot[data-id="${sh.id}"]`); if (!art) return;
+  art.outerHTML = shotHtml(sh, st.shots.indexOf(sh));
+  renderShotOut(sh);
+  if (focusSel) { const f = $(`.shot[data-id="${sh.id}"] ${focusSel}`); if (f) f.focus(); }
 }
 function renderShots() {
   $('#shots').innerHTML = st.shots.map(shotHtml).join('');
   st.shots.forEach(renderShotOut);
   renderTotals();
+  $('#addShot').textContent = '添加' + M().unit;
 }
 function renderTotals() {
   const live = st.shots.filter(s => s.status !== 'drop');
-  const sum = live.reduce((a, s) => a + (parseInt(s.dur, 10) || 0), 0);
+  const sum = live.reduce((a, s) => a + shotDur(s), 0);
   const ok = st.shots.filter(s => s.status === 'ok').length;
   const target = durNum();
   let cmp = '';
@@ -993,7 +1183,7 @@ function renderTotals() {
         : diff > 0 ? `<span class="off">比目标${target}秒多${diff}秒</span>`
         : `<span class="off">比目标${target}秒少${-diff}秒</span>`;
   }
-  $('#totals').innerHTML = `<b>${live.length}</b> 个镜头，合计 <b>${sum}</b> 秒，${cmp}；可用 <b>${ok}</b> 个`;
+  $('#totals').innerHTML = `<b>${live.length}</b> 个${M().unit}，合计 <b>${sum}</b> 秒，${cmp}；可用 <b>${ok}</b> 个`;
 }
 const findShot = id => st.shots.find(s => s.id === id);
 
@@ -1001,25 +1191,36 @@ const findShot = id => st.shots.find(s => s.id === id);
 function parseImport(text) {
   const re = /【\s*(主体|动作|场景|运镜|风格\s*[\/／]\s*音频|风格|音频)\s*】/g;
   const toks = []; let m;
-  while ((m = re.exec(text))) toks.push({tag: m[1].replace(/[\s／]/g, '').replace('风格音频', '风格/音频'), start: m.index, end: re.lastIndex});
+  while ((m = re.exec(text))) toks.push({tag: m[1].replace(/\s/g, '').replace('／', '/'), start: m.index, end: re.lastIndex});
   const shots = []; let cur = null;
-  const segRe = /^\s*(\d{1,2})\s*(?:到|-|–|—|~|～|至)\s*(\d{1,2})\s*秒\s*[：:]\s*(.+)$/;
+  const segRe = /^\s*(?:切镜到\s*)?(?:镜头\s*\d+\s*[（(]\s*)?(\d{1,2})\s*(?:到|-|–|—|~|～|至)\s*(\d{1,2})\s*秒\s*[）)]?\s*[：:]\s*(.+)$/;
   toks.forEach((t, i) => {
     const next = toks[i + 1];
     const raw = text.slice(t.end, next ? next.start : text.length);
     const lines = raw.split(/\r?\n/);
     const first = lines[0].split(/[|｜]/)[0].trim();
     if (t.tag === '主体') {
-      const pre = text.slice(Math.max(0, t.start - 120), t.start);
+      // only look back to the end of the previous field's line, so one shot's @ lines never leak into the next
+      let from = Math.max(0, t.start - 300);
+      if (i > 0) { const nl = text.indexOf('\n', toks[i - 1].end); from = Math.max(from, nl >= 0 && nl < t.start ? nl : toks[i - 1].end); }
+      const pre = text.slice(from, t.start);
       const ds = pre.match(/(\d{1,2})\s*秒/g);
       let dur = 8;
-      if (ds) { const n = parseInt(ds[ds.length - 1], 10); if (n >= 4 && n <= 15) dur = n; }
-      const preLines = pre.split(/\r?\n/).slice(-3).join(' ');
-      cur = {dur, subject: '', action: '', scene: '', camera: '', styleRaw: '', soundRaw: '', segs: [], refImg: /@图片1/.test(preLines), refVid: /@视频1/.test(preLines)};
+      if (ds) { const n = parseInt(ds[ds.length - 1], 10); if (n >= 4 && n <= 30) dur = n; }
+      const preTail = pre.split(/\r?\n/).slice(-6).join('\n');
+      cur = {dur, subject: '', action: '', scene: '', camera: '', styleRaw: '', soundRaw: '', segs: [], pre: preTail};
       shots.push(cur);
     }
     if (!cur) return;
-    lines.slice(1).forEach(l => { const s = l.match(segRe); if (s) cur.segs.push(s[3].trim()); });
+    lines.slice(1).forEach(l => {
+      const s = l.match(segRe);
+      if (s) {
+        const a = parseInt(s[1], 10), b = parseInt(s[2], 10);
+        const prevEnd = cur.segs.length ? cur.segs[cur.segs.length - 1].end : null;
+        const sec = (a === 0 || (prevEnd !== null && a === prevEnd)) ? b - a : b - a + 1;
+        cur.segs.push({sec: Math.max(1, sec), text: s[3].trim(), end: b});
+      }
+    });
     if (t.tag === '主体') cur.subject = first;
     else if (t.tag === '动作') cur.action = first;
     else if (t.tag === '场景') cur.scene = first;
@@ -1029,19 +1230,24 @@ function parseImport(text) {
   });
   const P = tr(st.s.protagonist), S = tr(st.s.style);
   const musicRe = /无配乐|不要配乐|没有配乐|无背景音乐|不要背景音乐/g;
+  const strip = v => v.replace(musicRe, '').replace(/[，,；;。\s]+$/, '').replace(/^[，,；;\s]+/, '').replace(/[，,；;]{2,}/g, '；');
   return shots.map(c => {
-    let raw = (c.styleRaw + (c.soundRaw ? '；' + c.soundRaw : ''));
-    const noMusic = musicRe.test(raw); musicRe.lastIndex = 0;
-    raw = raw.replace(musicRe, '').replace(/[，,；;。\s]+$/, '').replace(/^[，,；;\s]+/, '').replace(/[，,；;]{2,}/g, '；');
-    let useS = false, style = raw, sound = '';
-    if (S && raw.indexOf(S) === 0) { useS = true; style = ''; sound = raw.slice(S.length).replace(/^[；;，,。\s]+/, ''); }
-    else if (c.soundRaw) { style = c.styleRaw.replace(musicRe, '').replace(/[，,；;。\s]+$/, ''); sound = c.soundRaw.replace(musicRe, '').replace(/[，,；;。\s]+$/, ''); }
+    const joined = c.styleRaw + (c.soundRaw ? '；' + c.soundRaw : '');
+    const noMusic = /无配乐|不要配乐|没有配乐|无背景音乐|不要背景音乐/.test(joined);
+    let useS = false, style = strip(joined), sound = '';
+    if (S && style.indexOf(S) === 0) { useS = true; sound = style.slice(S.length).replace(/^[；;，,。\s]+/, ''); style = ''; }
+    else if (c.soundRaw) { style = strip(c.styleRaw); sound = strip(c.soundRaw); }
     const useP = !!P && c.subject === P;
-    const segs = c.segs.slice(0, 3);
-    if (c.segs.length > 3) segs[2] = c.segs.slice(2).join('；');
+    const segs = c.segs.map(g => ({sec: g.sec, text: g.text}));
     const tl = segs.length >= 2 && !c.action;
-    while (segs.length < 3) segs.push('');
-    return newShot({dur: c.dur, useP, subject: useP ? '' : c.subject, action: c.action, scene: c.scene, camera: c.camera, useS, style, sound, noMusic, tl, segs, refImg: c.refImg, refVid: c.refVid});
+    const pre = c.pre;
+    let vidUse = '';
+    if (/@视频1/.test(pre)) vidUse = /上一段|接着|结尾/.test(pre) ? 'prev' : /运镜/.test(pre) ? 'cam' : 'anchor';
+    let audUse = '';
+    if (/@音频1/.test(pre)) audUse = /音乐|配乐|BGM/i.test(pre) ? 'music' : 'voice';
+    return newShot({dur: tl ? segs.reduce((a, g) => a + g.sec, 0) : c.dur, useP, subject: useP ? '' : c.subject, action: c.action, scene: c.scene, camera: c.camera,
+      useS, style, sound, noMusic, tl, segs: tl ? segs : [],
+      refImg: /@图片\d[^\n]*(主角|角色|人物)/.test(pre), refScene: /@图片\d[^\n]*场景/.test(pre), vidUse, audUse});
   });
 }
 
@@ -1049,16 +1255,18 @@ function parseImport(text) {
 function exportText() {
   const s = st.s, tp = TPL[s.tpl] || TPL[''];
   const label = Object.fromEntries(STATUS);
-  const out = ['AI视频比赛作战台 导出', '',
+  const out = ['即梦AI视频比赛作战台 导出', '',
     '主题：' + (tr(s.theme) || '（未填）'),
+    '视频模型：' + M().name,
     '成片：' + (s.dur || '?') + '秒，' + s.aspect,
     '叙事模板：' + tp.n,
     '选中的创意：' + (tr(s.idea) || '（未填）'),
     '一句话故事：' + (tr(s.story) || '（未填）'),
     '主角设定：' + (tr(s.protagonist) || '（未填）'),
-    '统一风格：' + (tr(s.style) || '（未填）'), ''];
+    '统一风格：' + (tr(s.style) || '（未填）'),
+    '主场景：' + (tr(s.scene) || '（未填）'), ''];
   st.shots.forEach((sh, i) => {
-    out.push(`镜头${i + 1}（${sh.dur}秒，${label[sh.status]}，试${sh.tries}次）`);
+    out.push(`${M().unit}${i + 1}（${shotDur(sh)}秒，${label[sh.status]}，试${sh.tries}次）`);
     out.push(toCopy(composeShot(sh)), '');
   });
   return out.join('\n');
@@ -1116,7 +1324,7 @@ function tick() {
     $('#nextNode').textContent = '主题公布时点“开始计时”';
     $('#nextNode').classList.remove('hot');
     $$('.phase').forEach(p => p.classList.remove('on', 'done'));
-    if (!alertMsg) document.title = 'AI视频比赛作战台';
+    if (!alertMsg) document.title = '即梦AI视频比赛作战台';
     return;
   }
   const e = Date.now() - start, rem = T - e, em = e / 60000;
@@ -1155,49 +1363,40 @@ function startTimer(minutesIn) {
   ALERTS.forEach(([m]) => { if (sc(m) * 60000 <= (minutesIn || 0) * 60000) st.fired[String(sc(m))] = 1; });
   save(); tick();
 }
+function wakeAudio() { try { actx = actx || new (window.AudioContext || window.webkitAudioContext)(); actx.resume(); } catch (e) {} }
 
 /* ================= events ================= */
 document.addEventListener('input', ev => {
   const el = ev.target;
-  if (el.dataset.bind) {
+  if (el.dataset.bind && el.type !== 'radio') {
     const k = el.dataset.bind;
-    st.s[k] = el.type === 'number' ? el.value : el.value;
+    st.s[k] = el.value;
     $$(`[data-bind="${k}"]`).forEach(o => { if (o !== el && o.type !== 'radio') o.value = el.value; });
     save(); renderCards();
     if (k === 'protagonist' || k === 'style') {
-      st.shots.forEach(sh => {
-        const art = $(`.shot[data-id="${sh.id}"]`);
-        if (!art) return;
-        if (k === 'protagonist' && sh.useP) { const p = $('[data-f="useP"]', art).closest('.field').querySelector('p'); if (p) p.textContent = tr(st.s.protagonist) || '第3步还没填主角设定'; }
-        if (k === 'style' && sh.useS) { const p = $('[data-f="useS"]', art).closest('.field').querySelector('p'); if (p) p.textContent = tr(st.s.style) || '第3步还没填统一风格'; }
-        renderShotOut(sh);
-      });
+      $$(`[data-show="${k}"]`).forEach(p => { p.textContent = tr(st.s[k]) || (k === 'protagonist' ? '第3步还没填主角设定' : '第3步还没填统一风格'); });
+      st.shots.forEach(renderShotOut);
     }
     if (k === 'dur') renderTotals();
     if (k === 'total') { renderPhases(); tick(); }
     return;
   }
   const f = el.dataset.f;
-  if (f) {
-    const art = el.closest('.shot'); const sh = findShot(art.dataset.id);
-    if (!sh) return;
-    if (el.type === 'checkbox') return; // handled on change
-    if (f.indexOf('seg') === 0) sh.segs[+f.slice(3)] = el.value;
-    else sh[f] = el.value;
-    save();
-    if (f === 'dur') {
-      const d = parseInt(el.value, 10);
-      if (d >= 4 && d <= 15) { renderTotals(); }
-      renderShotOut(sh); renderTotals();
-      return;
-    }
-    renderShotOut(sh);
-  }
+  if (!f || el.type === 'checkbox' || el.tagName === 'SELECT') return;
+  const art = el.closest('.shot'); const sh = art && findShot(art.dataset.id);
+  if (!sh) return;
+  if (f === 'segtext') sh.segs[+el.dataset.k].text = el.value;
+  else if (f === 'segsec') { sh.segs[+el.dataset.k].sec = parseInt(el.value, 10) || 0; sh.dur = shotDur(sh); }
+  else if (f === 'dur') sh.dur = parseInt(el.value, 10) || 0;
+  else sh[f] = el.value;
+  save(); renderShotOut(sh);
+  if (f === 'dur' || f === 'segsec') renderTotals();
 });
 document.addEventListener('change', ev => {
   const el = ev.target;
   if (el.dataset.bind && el.type === 'radio') {
     st.s[el.dataset.bind] = el.value; save(); renderCards();
+    if (el.dataset.bind === 'model') renderShots();
     return;
   }
   if (el.dataset.check) {
@@ -1205,26 +1404,34 @@ document.addEventListener('change', ev => {
     return;
   }
   const f = el.dataset.f;
-  if (f) {
-    const art = el.closest('.shot'); const sh = findShot(art.dataset.id);
-    if (!sh) return;
-    if (el.type === 'checkbox') {
-      sh[f] = el.checked; save();
-      if (f === 'useP' || f === 'useS' || f === 'tl') {
-        const i = st.shots.indexOf(sh);
-        art.outerHTML = shotHtml(sh, i);
-        renderShotOut(sh);
-        const again = $(`.shot[data-id="${sh.id}"] [data-f="${f}"]`); if (again) again.focus();
-      } else renderShotOut(sh);
-      return;
+  if (!f) return;
+  const art = el.closest('.shot'); const sh = art && findShot(art.dataset.id);
+  if (!sh) return;
+  if (el.type === 'checkbox') {
+    sh[f] = el.checked;
+    if (f === 'tl' && sh.tl) {
+      if (!sh.segs.length) {
+        const d = Math.max(6, parseInt(sh.dur, 10) || 8);
+        const n = is25() ? (d >= 20 ? 3 : 2) : 3;
+        sh.segs = splitSecs(d, n).map((sec, i) => ({sec, text: i === 0 ? tr(sh.action) : ''}));
+      }
+      sh.dur = shotDur(sh);
     }
-    if (f === 'status') { sh.status = el.value; save(); renderShotOut(sh); renderTotals(); return; }
-    if (f === 'dur') {
-      let d = parseInt(el.value, 10); if (!(d >= 4)) d = 4; if (d > 15) d = 15;
-      sh.dur = d; save();
-      const i = st.shots.indexOf(sh);
-      art.outerHTML = shotHtml(sh, i); renderShotOut(sh); renderTotals();
-    }
+    save();
+    if (f === 'useP' || f === 'useS' || f === 'tl') rerenderShot(sh, `[data-f="${f}"]`);
+    else renderShotOut(sh);
+    renderTotals();
+    return;
+  }
+  if (f === 'status') { sh.status = el.value; save(); renderShotOut(sh); renderTotals(); return; }
+  if (f === 'vidUse' || f === 'audUse') { sh[f] = el.value; save(); renderShotOut(sh); return; }
+  if (f === 'dur') {
+    let d = parseInt(el.value, 10); if (!(d >= 4)) d = 4; if (d > M().max) d = M().max;
+    sh.dur = d; save(); el.value = d; renderShotOut(sh); renderTotals();
+  }
+  if (f === 'segsec') {
+    let v = parseInt(el.value, 10); if (!(v >= 1)) v = 1;
+    sh.segs[+el.dataset.k].sec = v; sh.dur = shotDur(sh); el.value = v; save(); renderShotOut(sh); renderTotals();
   }
 });
 const armed = new WeakMap();
@@ -1236,7 +1443,7 @@ function arm(btn, label, fn) {
 }
 document.addEventListener('click', ev => {
   const t = ev.target.closest('button, .phase');
-  if (!t) return;
+  if (!t || t.disabled) return;
   if (t.dataset.go) { goStep(+t.dataset.go, true); return; }
   if (t.dataset.copyCard) { copyText(toCopy(CARDS[t.dataset.copyCard].b(st.s)), t); return; }
   if (t.dataset.dur) {
@@ -1250,8 +1457,17 @@ document.addEventListener('click', ev => {
   const act = t.dataset.act;
   if (act) {
     const art = t.closest('.shot'); const sh = findShot(art.dataset.id); const i = st.shots.indexOf(sh);
-    if (act === 'copy') { copyText(toCopy(composeShot(sh)), t); if (sh.status === 'todo') { sh.status = 'sent'; sh.tries = Math.max(sh.tries, 1); save(); const sel = $('[data-f="status"]', art); sel.value = 'sent'; art.dataset.status = 'sent'; $('.tries b', art).textContent = sh.tries; renderTotals(); } return; }
-    if (act === 'try') { sh.tries++; if (sh.status === 'todo') sh.status = 'sent'; save(); art.outerHTML = shotHtml(sh, i); renderShotOut(sh); renderTotals(); return; }
+    if (act === 'copy') {
+      copyText(toCopy(composeShot(sh)), t);
+      if (sh.status === 'todo') {
+        sh.status = 'sent'; sh.tries = Math.max(sh.tries, 1); save();
+        $('[data-f="status"]', art).value = 'sent'; art.dataset.status = 'sent'; $('.tries b', art).textContent = sh.tries; renderTotals();
+      }
+      return;
+    }
+    if (act === 'try') { sh.tries++; if (sh.status === 'todo') sh.status = 'sent'; save(); rerenderShot(sh); renderTotals(); return; }
+    if (act === 'segadd') { sh.segs.push({sec: 3, text: ''}); sh.dur = shotDur(sh); save(); rerenderShot(sh, `[data-f="segtext"][data-k="${sh.segs.length - 1}"]`); renderTotals(); return; }
+    if (act === 'segdel') { if (sh.segs.length > 2) { sh.segs.splice(+t.dataset.k, 1); sh.dur = shotDur(sh); save(); rerenderShot(sh); renderTotals(); } return; }
     if (act === 'up' && i > 0) { st.shots.splice(i - 1, 0, st.shots.splice(i, 1)[0]); save(); renderShots(); return; }
     if (act === 'down' && i < st.shots.length - 1) { st.shots.splice(i + 1, 0, st.shots.splice(i, 1)[0]); save(); renderShots(); return; }
     if (act === 'dup') { const c = newShot(JSON.parse(JSON.stringify(sh))); c.id = uid(); c.status = 'todo'; c.tries = 0; st.shots.splice(i + 1, 0, c); save(); renderShots(); return; }
@@ -1259,12 +1475,10 @@ document.addEventListener('click', ev => {
     return;
   }
   switch (t.id) {
-    case 'startBtn':
-      try { actx = actx || new (window.AudioContext || window.webkitAudioContext)(); actx.resume(); } catch (e) {}
-      startTimer(0); break;
+    case 'startBtn': wakeAudio(); startTimer(0); break;
     case 'calibBtn': {
       const m = parseFloat($('#calibIn').value);
-      if (m >= 0) { try { actx = actx || new (window.AudioContext || window.webkitAudioContext)(); actx.resume(); } catch (e) {} startTimer(m); $('#calibIn').value = ''; }
+      if (m >= 0) { wakeAudio(); startTimer(m); $('#calibIn').value = ''; }
       break;
     }
     case 'resetTimer':
@@ -1274,27 +1488,27 @@ document.addEventListener('click', ev => {
       const open = $('#slate').classList.toggle('open');
       t.setAttribute('aria-expanded', open ? 'true' : 'false'); break;
     }
-    case 'helpBtn': {
-      const d = $('#help'); if (d.showModal) d.showModal(); else d.setAttribute('open', ''); break;
-    }
+    case 'helpBtn': { const d = $('#help'); if (d.showModal) d.showModal(); else d.setAttribute('open', ''); break; }
     case 'helpClose': { const d = $('#help'); if (d.close) d.close(); else d.removeAttribute('open'); break; }
     case 'alertOk': alertMsg = ''; $('#alert').hidden = true; tick(); break;
-    case 'addShot': st.shots.push(newShot()); save(); renderShots();
-      { const last = $$('.shot').pop(); if (last) { last.scrollIntoView({block: 'center'}); const f = $('input[type=text]', last); if (f) f.focus(); } }
+    case 'addShot': {
+      st.shots.push(newShot()); save(); renderShots();
+      const last = $$('.shot').pop(); if (last) { last.scrollIntoView({block: 'center'}); const f = $('input[type=text]', last); if (f) f.focus(); }
       break;
+    }
     case 'copyAllShots': {
-      const txt = st.shots.filter(s => s.status !== 'drop').map((sh, i) => `镜头${i + 1}（${sh.dur}秒）\n` + toCopy(composeShot(sh))).join('\n\n');
+      const txt = st.shots.filter(s => s.status !== 'drop').map((sh, i) => `${M().unit}${i + 1}（${shotDur(sh)}秒）\n` + toCopy(composeShot(sh))).join('\n\n');
       copyText(txt, t); break;
     }
     case 'importBtn': {
       const txt = $('#importBox').value; const msg = $('#importMsg');
       const shots = parseImport(txt);
       if (!shots.length) { msg.className = 'import-msg err'; msg.textContent = '没找到【主体】标签。先用卡片 E 让AI按格式输出，再整段粘贴进来。'; break; }
-      const blank = st.shots.every(s => !tr(s.subject) && !tr(s.action) && !tr(s.scene) && !tr(s.camera) && !s.segs.some(tr));
+      const blank = st.shots.every(s => !tr(s.subject) && !tr(s.action) && !tr(s.scene) && !tr(s.camera) && !s.segs.some(g => tr(g.text)));
       st.shots = blank ? shots : st.shots.concat(shots);
       save(); renderShots();
       msg.className = 'import-msg ok';
-      msg.textContent = (blank ? '已拆出 ' : '已追加 ') + shots.length + ' 个镜头。' + (blank ? '' : '旧镜头保留在前面，不要的可以删除。');
+      msg.textContent = (blank ? '已拆出 ' : '已追加 ') + shots.length + ' 个' + M().unit + '。' + (blank ? '' : '旧的保留在前面，不要的可以删除。');
       break;
     }
     case 'importClear': $('#importBox').value = ''; $('#importMsg').textContent = ''; break;
@@ -1303,7 +1517,7 @@ document.addEventListener('click', ev => {
       try {
         const blob = new Blob([exportText()], {type: 'text/plain;charset=utf-8'});
         const a = document.createElement('a');
-        const name = 'AI视频比赛_' + (tr(st.s.theme) || '未命名').replace(/[\\/:*?"<>|]/g, '') + '.txt';
+        const name = '即梦AI视频比赛_' + (tr(st.s.theme) || '未命名').replace(/[\\/:*?"<>|]/g, '') + '.txt';
         a.href = URL.createObjectURL(blob); a.download = name; document.body.appendChild(a); a.click();
         setTimeout(() => { URL.revokeObjectURL(a.href); a.remove(); }, 1000);
       } catch (e) {}
