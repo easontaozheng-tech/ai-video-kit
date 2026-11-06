@@ -128,6 +128,16 @@ input:disabled{opacity:.7}
 .tpl:has(input:checked){border:2px solid var(--ink);padding:10px 12px}
 .tpl:has(input:focus-visible){outline:2px solid var(--ink);outline-offset:2px}
 .tag{display:inline-block;font-size:11.5px;font-weight:600;color:var(--go);border:1px solid var(--go);border-radius:4px;padding:0 5px;margin-left:6px;vertical-align:1px}
+.aes{border:1px solid var(--rule);border-left:3px solid var(--ink);background:var(--sheet);border-radius:4px;padding:2px 16px 16px;margin:20px 0}
+.aes h3{margin:16px 0 4px}
+.aes .field{margin:14px 0}
+.cams{display:flex;flex-wrap:wrap;gap:8px}
+.cams label{position:relative;cursor:pointer}
+.cams input{position:absolute;opacity:0;pointer-events:none}
+.cams span{display:block;border:1px solid var(--rule);border-radius:999px;padding:4px 12px;font-size:13.5px;background:var(--paper)}
+.cams input:checked+span{background:var(--ink);color:var(--paper);border-color:var(--ink)}
+.cams input:focus-visible+span{outline:2px solid var(--ink);outline-offset:2px}
+.keytag{font-size:12px;font-weight:600;border:1px solid var(--ink);border-radius:4px;padding:0 6px;line-height:1.6}
 
 /* prompt blocks */
 .prompt{background:var(--sheet);border:1px solid var(--rule);border-left:3px solid var(--ink);border-radius:4px;margin:14px 0}
@@ -424,8 +434,8 @@ dialog.help::backdrop{background:rgba(12,18,22,.55)}
 
   <!-- STEP 3 -->
   <section class="step" data-step="3" aria-labelledby="h3s" hidden>
-    <h2 id="h3s">定主角和风格，做参考图，再出分镜</h2>
-    <p class="lead">卡片 C 的结果填进下面的框，然后用即梦“图片生成”做主角参考图。之后每个镜头都会原样带上主角和风格。</p>
+    <h2 id="h3s">定主角和审美规则，做参考图，再出分镜</h2>
+    <p class="lead">卡片 C 的结果填进下面的框，再定审美规则。之后每张卡片、每个镜头都会带上主角和规则，镜头工坊也会按规则检查。</p>
 
     <div data-card="C"></div>
 
@@ -434,19 +444,61 @@ dialog.help::backdrop{background:rgba(12,18,22,.55)}
       <textarea data-bind="protagonist" rows="2" placeholder="例如：二十多岁的女孩，齐肩短发，红色雨衣，背一个旧帆布包"></textarea>
       <span class="hint">50字以内。没有固定主角（比如全是意象镜头）可以留空。</span>
     </label>
+
+    <div class="aes">
+      <h3>审美规则：先定再拍，定了不改</h3>
+      <p class="small muted">AI 片子的通病是颜色太艳、到处在动、到处都亮。做减法：一个主色、一个光源、两种运镜。</p>
+      <div class="grid2">
+        <label class="field"><span class="lbl">主色调</span><input type="text" data-bind="palette" list="paletteList" placeholder="例如：低饱和冷灰蓝" autocomplete="off"></label>
+        <label class="field"><span class="lbl">强调色（只在转折出现）</span><input type="text" data-bind="accent" list="accentList" placeholder="例如：台灯的暖黄光" autocomplete="off"></label>
+        <label class="field"><span class="lbl">光线（只有一个光源）</span><input type="text" data-bind="light" list="lightList" placeholder="例如：唯一光源是窗光" autocomplete="off"></label>
+        <label class="field"><span class="lbl">质感</span><input type="text" data-bind="texture" list="textureList" placeholder="例如：16mm胶片颗粒" autocomplete="off"></label>
+      </div>
+      <div class="field">
+        <span class="lbl">全片允许的运镜</span>
+        <div class="cams" id="camsBox" role="group" aria-label="全片允许的运镜"></div>
+        <span class="hint">建议只留两种。转折或结尾可以例外一次，镜头工坊会提醒超出规则的运镜。</span>
+      </div>
+      <button class="btn" type="button" id="makeStyle">用规则生成统一风格</button>
+    </div>
+    <datalist id="paletteList">
+      <option value="低饱和冷灰蓝"></option>
+      <option value="暖棕旧胶片色"></option>
+      <option value="黑白，高反差"></option>
+      <option value="清晨的青绿和米白"></option>
+      <option value="深夜的墨蓝"></option>
+    </datalist>
+    <datalist id="accentList">
+      <option value="台灯的暖黄光"></option>
+      <option value="一抹红色"></option>
+      <option value="清晨的金色阳光"></option>
+    </datalist>
+    <datalist id="lightList">
+      <option value="唯一光源是窗光"></option>
+      <option value="唯一光源是台灯"></option>
+      <option value="侧逆光，大面积暗部"></option>
+      <option value="黄昏低角度阳光"></option>
+      <option value="阴天柔光"></option>
+    </datalist>
+    <datalist id="textureList">
+      <option value="16mm胶片颗粒"></option>
+      <option value="纪录片质感"></option>
+      <option value="纸张和铅笔质感"></option>
+      <option value="水彩晕染"></option>
+    </datalist>
+
     <label class="field">
       <span class="lbl">统一风格</span>
-      <input type="text" data-bind="style" list="styleList" placeholder="例如：写实质感，暖黄与冷蓝对比" autocomplete="off">
-      <span class="hint">20字以内，可以直接从下拉建议里选。</span>
+      <input type="text" data-bind="style" list="styleList" placeholder="留空时自动用上面的规则拼出来" autocomplete="off">
+      <span class="hint">会原样写进每个镜头的【风格/音频】。20字左右；点上面的按钮可以用规则生成后再改。</span>
     </label>
     <datalist id="styleList">
       <option value="写实质感，自然光"></option>
       <option value="胶片质感，暖黄与冷蓝对比"></option>
       <option value="纪录片质感，手持自然光"></option>
       <option value="水彩插画风，柔和色彩"></option>
-      <option value="3D动画风，明亮饱和"></option>
+      <option value="3D动画风，柔和低饱和"></option>
       <option value="黑白电影，高反差光影"></option>
-      <option value="霓虹夜色，冷暖强对比"></option>
       <option value="极简留白，低饱和"></option>
     </datalist>
     <label class="field">
@@ -468,6 +520,10 @@ dialog.help::backdrop{background:rgba(12,18,22,.55)}
     <div data-card="E"></div>
     <div data-card="F"></div>
     <div data-card="G"></div>
+
+    <h3>关键帧：开头、转折、结尾先出图</h3>
+    <p class="small muted">评委记住的往往就是这三帧。先在即梦“图片生成”里把构图、光线、色彩调到满意，再用图生视频（首帧）让它动起来。出图比出视频快，也更好控制。其他镜头照常用全能参考。</p>
+    <div data-card="K"></div>
 
     <div class="next-row"><button class="btn ghost" type="button" data-go="2">上一步</button><button class="btn primary" type="button" data-go="4">下一步：镜头工坊</button></div>
   </section>
@@ -491,6 +547,7 @@ dialog.help::backdrop{background:rgba(12,18,22,.55)}
           <li><b>接着上一段拍：</b>把上一段成片作为 @视频1，写“从它的结尾接着往下拍”。连续接3次以上画质可能下降，建议每接2次就重新开一段。</li>
           <li><b>审核和崩坏：</b>真人写实人脸可能被拦截，改用即梦生成的原创形象或插画风；手部容易变形，让手放稳或不入画。</li>
           <li><b>Seedance 2.5（如果有）：</b>一段最长30秒，可以在一段里按时间切几个镜头，还能只改画面局部。</li>
+          <li><b>关键帧走首帧：</b>标为关键帧的镜头，先用卡片 K 出图，再在视频生成里用首帧（图生视频）上传这张图，提示词只写动作、运镜和声音。</li>
         </ol>
         <h4>提示词格式</h4>
         <div class="formula">Seedance 2.0：一段一个镜头
@@ -552,11 +609,15 @@ dialog.help::backdrop{background:rgba(12,18,22,.55)}
       <li><b>即梦“数字人”。</b>上传一张人物图，输入旁白文字，选一个音色生成；剪辑时只用它的声音。每句都用同一个音色。</li>
       <li><b>让视频自带旁白。</b>在【风格/音频】里写“女声旁白：‘……’”。每段音色可能不一样，先试一条再决定。</li>
     </ol>
-    <p class="small muted">有人物对着镜头说话时，用即梦的“对口型”或“数字人”：人物要正脸、清晰；配音不能比视频长。</p>
+    <p class="small muted">旁白宁少勿多：按每秒约3个字写，比上限每秒4个字更有呼吸感。有人物对着镜头说话时，用即梦的“对口型”或“数字人”：人物要正脸、清晰；配音不能比视频长。</p>
     <div data-card="H"></div>
 
     <div class="check-head"><h3>剪辑清单</h3><span class="progress" data-progress="edit"></span></div>
     <ul class="checks" data-checks="edit"></ul>
+
+    <div class="check-head"><h3>后期统一：给所有镜头加同一层“胶水”</h3><span class="progress" data-progress="glue"></span></div>
+    <p class="small muted">不同批次生成的镜头色温和质感会有差别，这一层让它们看起来像同一部片。</p>
+    <ul class="checks" data-checks="glue"></ul>
 
     <p class="small muted">离线软件没有音乐库时：在即梦生成一段只有配乐的空镜头，剪辑时只取它的音频。</p>
 
@@ -574,6 +635,8 @@ dialog.help::backdrop{background:rgba(12,18,22,.55)}
     <ul class="checks" data-checks="q2"></ul>
     <div class="check-head"><h3>AI 使用</h3><span class="progress" data-progress="q3"></span></div>
     <ul class="checks" data-checks="q3"></ul>
+    <div class="check-head"><h3>审美</h3><span class="progress" data-progress="q5"></span></div>
+    <ul class="checks" data-checks="q5"></ul>
     <div class="check-head"><h3>交付</h3><span class="progress" data-progress="q4"></span></div>
     <ul class="checks" data-checks="q4"></ul>
 
@@ -641,13 +704,21 @@ const CHECKS = {
     ['e2','确认导出设置：分辨率、帧率、格式（通常是 MP4）'],
     ['e3','素材即生成即下载，统一命名为“镜号_版本”，如 S03_v2'],
     ['e4','生成排队时开始粗剪，按分镜顺序摆上时间线'],
-    ['e5','每个镜头掐头去尾，只留最好的几秒'],
+    ['e5','每条只留最好的2到4秒，剪掉结尾的变形和多余动作；不符合审美规则的镜头再漂亮也不用'],
     ['e6','整片只用一首配乐，剪辑点尽量卡在节拍上'],
     ['e7','各镜头自带的音乐静音，只保留需要的环境音'],
     ['e8','旁白放在最上层，音量盖过配乐'],
     ['e9','片头标题、旁白字幕、片尾作品名全部在剪辑里加'],
     ['e10','片尾放提示词截图或迭代对比（规则允许时，10秒以内）'],
     ['e11','每完成一个阶段，导出一个低清预览版防丢']
+  ],
+  glue: [
+    ['g1','所有镜头套同一个调色滤镜，把色温差压平'],
+    ['g2','软件有颗粒效果的话，全片叠同一层颗粒'],
+    ['g3','景别远、近、特写交替，没有连续三个同景别的镜头'],
+    ['g4','转折前留1到2秒安静，让金句落地'],
+    ['g5','全片一种字体，字号偏小，留足边距，用白字或米白字'],
+    ['g6','不用花字、贴纸和模板动效；片头片尾用黑底白字']
   ],
   q1: [
     ['q1a','前3秒有钩子：一个反常画面或一个问题'],
@@ -664,6 +735,12 @@ const CHECKS = {
   q3: [
     ['q3a','能看出用了参考图、多镜头或音画同步，而不只是“一句话生成”'],
     ['q3b','片尾有提示词或迭代对比展示（规则允许时）']
+  ],
+  q5: [
+    ['q5a','全片色彩、光线、运镜遵守同一套审美规则'],
+    ['q5b','强调色只在转折出现，没有到处都是'],
+    ['q5c','没有塑料感的正脸、变形的手，也没有结尾变形的镜头'],
+    ['q5d','开头、转折、结尾三帧单独截图也站得住']
   ],
   q4: [
     ['q4a','时长、格式、分辨率符合比赛要求'],
@@ -683,6 +760,7 @@ const FIXES = [
   ['画面文字乱码','招牌、标题是乱码','去掉画面文字要求，文字全部在剪辑里加'],
   ['自带莫名配乐','每段音乐不一样','提示词写“无配乐”；剪辑时把该段音轨静音'],
   ['声音被截断、口型对不上','配音只出来一半，或嘴型不对','视频时长不能短于音频；用干净人声，语速放慢，人物正脸清晰'],
+  ['画面“AI味”重','颜色太艳、到处都亮、镜头乱飞','删掉炫光、高饱和这类词；每个镜头只留一个光源；运镜回到审美规则里的两种；少拍正脸'],
   ['时间不够','第80分钟还有很多镜头没出','保住开头钩子和结尾，中段合并或删镜头'],
   ['软件崩溃、文件丢失','工程打不开','每完成一个阶段导出一个低清预览版，随时保存']
 ];
@@ -715,6 +793,10 @@ const CAM = [
   ['变焦',/变焦|希区柯克/],
   ['固定',/固定机位|固定镜头|画面不动|机位不动/]
 ];
+const CAM_NAMES = {'固定':'固定机位','推近':'缓慢推近','拉远':'缓慢拉远','横移':'横移','跟拍':'跟拍','环绕':'环绕','升降':'升降','摇镜':'摇镜'};
+const CAM_ORDER = ['固定','推近','拉远','横移','跟拍','环绕','升降','摇镜'];
+const KEYS = {hook:'开头钩子', turn:'转折', end:'结尾'};
+const SCALES = ['大特写','特写','近景','中景','全景','远景'];
 const CAM_LIST = ['缓慢推近，止于近景','缓慢推近，止于特写','缓慢拉远，止于全景','中景缓慢横移，止于侧脸近景','跟拍主体，保持中景','环绕主体半圈，止于正面中景','缓慢上升，止于俯拍全景','固定机位，画面不动','低角度仰拍，缓慢推近，止于中景','手持轻微晃动，跟随主体'];
 
 /* ================= state ================= */
@@ -725,7 +807,7 @@ function splitSecs(d, n) {
 }
 function newShot(p) {
   const sh = Object.assign({id:uid(), dur:8, useP:true, subject:'', action:'', scene:'', camera:'', useS:true, style:'', sound:'', noMusic:true,
-    refImg:false, refScene:false, vidUse:'', audUse:'', tl:false, segs:[], status:'todo', tries:0}, p || {});
+    refImg:false, refScene:false, vidUse:'', audUse:'', key:'', tl:false, segs:[], status:'todo', tries:0}, p || {});
   // migrate older formats
   if (sh.refVid && !sh.vidUse) sh.vidUse = 'anchor';
   delete sh.refVid;
@@ -740,7 +822,8 @@ function newShot(p) {
   return sh;
 }
 function defaults() {
-  return {s:{theme:'', model:'2.0', dur:60, aspect:'16:9', total:120, domain:'', tpl:'pangbai', idea:'', story:'', protagonist:'', style:'', scene:''},
+  return {s:{theme:'', model:'2.0', dur:60, aspect:'16:9', total:120, domain:'', tpl:'pangbai', idea:'', story:'', protagonist:'', style:'', scene:'',
+              palette:'', accent:'', light:'', texture:'', cams:['固定','推近']},
           shots:[newShot()], checks:{}, timer:{start:null}, fired:{}, step:1, sound:true};
 }
 function load() {
@@ -817,6 +900,23 @@ function videoLine(s) {
     ? '视频用即梦 Seedance 2.5 生成：一段最长30秒，一段里可以按时间切几个镜头'
     : '视频用即梦 Seedance 2.0 生成：一段4到15秒，一段一个镜头';
 }
+/* ---- aesthetic rules ---- */
+const composeStyle = s => [s.palette, s.light, s.texture].map(tr).filter(Boolean).join('，');
+const styleOf = s => tr(s.style) || composeStyle(s);
+const camRule = s => (s.cams || []).filter(k => CAM_NAMES[k]).map(k => CAM_NAMES[k]).join('、');
+function visualRules(s, forImage) {
+  const L = [];
+  const P = tr(s.palette), A = tr(s.accent);
+  if (P) L.push('主色调：' + P);
+  if (A) L.push('强调色「' + A + '」只在情绪转折的' + (forImage ? '那一张' : '镜头') + '出现，其他' + (forImage ? '画面' : '镜头') + '不要出现');
+  L.push('光线：' + (tr(s.light) ? tr(s.light) + '；' : '') + '每个画面只有一个看得出来源的光，保留暗部');
+  if (tr(s.texture)) L.push('质感：' + tr(s.texture));
+  if (!forImage && camRule(s)) L.push('运镜只用：' + camRule(s) + '（转折或结尾可以例外一次）');
+  L.push('构图：主体放在画面一侧三分之一，另一侧留白' + (forImage ? '' : '；景别按远景、近景、特写交替，不要连续3个镜头同一景别'));
+  L.push('少拍正脸，多用物件特写、局部、背影和剪影');
+  L.push('不要炫光、高饱和、粒子特效');
+  return L.map(x => '- ' + x).join('\n');
+}
 const CARDS = {
   A: {t:'卡片 A', sub:'出10个创意', where:'复制给文字AI', b: s => {
     const tp = TPL[s.tpl] && s.tpl ? TPL[s.tpl] : null;
@@ -835,25 +935,26 @@ ${videoLine(s)}。它擅长单人、单一动作、氛围镜头；不擅长多�
   C: {t:'卡片 C', sub:'主角设定', where:'复制给文字AI', b: s =>
 `故事：${G(s.story,'一句话故事')}
 为这个故事的主角（人或物）写一段固定外观描述，50字以内：年龄或材质、发型或形状、服装颜色和材质、一个标志性细节。
-${tr(s.style) ? '画面风格已定为「' + tr(s.style) + '」，不用再写风格。' : '再写一行统一的画面风格描述，20字以内，包括色调和质感。'}
-主角用原创形象，不要真人明星或已有的动漫、影视角色。之后每个镜头都会原样复制这段描述。`},
+${styleOf(s) ? '画面风格已定为「' + styleOf(s) + '」，不用再写风格。' : '再写一行统一的画面风格描述，20字以内，包括色调和质感。'}
+主角用原创形象，不要真人明星或已有的动漫、影视角色。外观要能在背影、剪影和局部特写里认出来，比如一种颜色或一个标志性物件。之后每个镜头都会原样复制这段描述。`},
   C2: {t:'卡片 C2', sub:'主角参考图', where:'复制到即梦“图片生成”，比例选16:9', b: s =>
-`${G(s.protagonist,'主角设定')}。${G(s.style,'统一风格')}。
+`${G(s.protagonist,'主角设定')}。${G(styleOf(s),'统一风格')}。
 角色设定图：纯浅灰背景，同一主角的正面、侧面、背面三个视角并排，完整入画，光线均匀，画面中不要任何文字。`},
   C3: {t:'卡片 C3', sub:'场景参考图', where:'复制到即梦“图片生成”，比例与成片一致', b: s =>
-`${G(s.scene,'主场景')}。${G(s.style,'统一风格')}。
+`${G(s.scene,'主场景')}。${G(styleOf(s),'统一风格')}。${tr(s.light) ? tr(s.light) + '，保留大面积暗部。' : ''}
 空镜，画面中没有人物，不要任何文字，画幅${s.aspect}。`},
   D: {t:'卡片 D', sub:'脚本', where:'复制给文字AI', b: s => {
     const tp = TPL[s.tpl] && s.tpl ? TPL[s.tpl] : null;
     const d = durNum();
     return `比赛主题是「${G(s.theme,'主题')}」。基于一句话故事「${G(s.story,'一句话故事')}」，写一个约${G(s.dur,'秒数')}秒的短片脚本。
 ${tp ? '叙事结构：' + tp.n + '，' + tp.s + '。\n' : ''}节奏：0到3秒是钩子，用一个反常画面或一个问题；中段三个递进节拍；结尾一句金句或一个反转，并呼应开头。
-输出旁白全文，以及每句旁白对应的画面。每句旁白不超过15个字，旁白总字数不超过${G(d ? d * 4 : '', '字数上限')}字。
+输出旁白全文，以及每句旁白对应的画面。每句旁白不超过15个字，旁白总字数控制在${G(d ? d * 3 : '', '字数')}字左右，最多不超过${G(d ? d * 4 : '', '字数上限')}字，给画面留出呼吸。
 画面以单人、单一动作、氛围镜头为主；不要多人肢体接触，不要在画面里出现文字。`;
   }},
   E: {t:'卡片 E', sub:'分镜和视频提示词', where:'复制给文字AI，结果整段粘贴到第4步', b: s => {
     const d = durNum();
-    const P = tr(s.protagonist), S = tr(s.style);
+    const P = tr(s.protagonist), S = styleOf(s);
+    const VR = '视觉规则（每个' + (s.model === '2.5' ? '片段' : '镜头') + '都要遵守）：\n' + visualRules(s, false);
     const subj = P || '画面里的主要对象，1到2个具体特征';
     const sty = S || '统一的视觉基调';
     const rule1 = P ? '主角出场时，【主体】一字不改地复制上面的主角设定；没有主角时，【主体】写画面里的主要对象。' : '【主体】写画面里的主要对象，同一对象在各段中的描述保持一致。';
@@ -871,6 +972,7 @@ ${tp ? '叙事结构：' + tp.n + '，' + tp.s + '。\n' : ''}节奏：0到3秒�
 切镜到 镜头2（7到14秒）：景别，一种运镜，动作
 切镜到 镜头3（15到20秒）：景别，一种运镜，动作
 【风格/音频】${sty}；点名具体声音；结尾写“无配乐”
+${VR}
 规则：
 1. ${rule1}
 2. 每个镜头只用一种运镜，时间连续不重叠，加起来等于这一段的秒数。
@@ -895,6 +997,7 @@ ${tp ? '叙事结构：' + tp.n + '，' + tp.s + '。\n' : ''}节奏：0到3秒�
 1到3秒：……
 4到6秒：……
 7到9秒：……
+${VR}
 约束：每个镜头合计不超过100字；一个镜头只用一种运镜；不出现多人肢体接触；不在画面里生成文字；不使用真人明星或已有角色；不用“电影感、史诗、绝美”这类空泛词。`;
   }},
   F: {t:'卡片 F', sub:'分镜自检', where:'复制给文字AI', b: s => {
@@ -907,6 +1010,7 @@ ${tp ? '叙事结构：' + tp.n + '，' + tp.s + '。\n' : ''}节奏：0到3秒�
 4. 是否有多人肢体接触或画面文字
 5. 字数是否按每15秒约100字控制
 6. 所有片段加起来是否在${G(s.dur,'秒数')}秒左右，误差不超过5秒
+7. 是否遵守视觉规则：${camRule(s) ? '运镜只用' + camRule(s) + '；' : ''}${tr(s.accent) ? '强调色只在转折出现；' : ''}景别交替；没有炫光、高饱和这类写法
 列出问题，然后按原格式输出修改后的全部片段提示词。`;
     return `逐个镜头检查上面的视频提示词：
 1. 是否超过100字
@@ -915,7 +1019,17 @@ ${tp ? '叙事结构：' + tp.n + '，' + tp.s + '。\n' : ''}节奏：0到3秒�
 4. 是否有多人肢体接触或画面文字
 5. 超过8秒的镜头，【动作】是否写成了三段时间轴
 6. 所有镜头时长加起来是否在${G(s.dur,'秒数')}秒左右，误差不超过5秒
+7. 是否遵守视觉规则：${camRule(s) ? '运镜只用' + camRule(s) + '；' : ''}${tr(s.accent) ? '强调色只在转折出现；' : ''}没有连续3个镜头同一景别；没有炫光、高饱和这类写法
 列出问题，然后按原格式输出修改后的全部镜头提示词。`;
+  }},
+  K: {t:'卡片 K', sub:'三张关键帧', where:'复制给文字AI，结果逐条复制到即梦“图片生成”', b: s => {
+    const P = tr(s.protagonist);
+    return `根据上面的分镜，为三个最重要的画面各写一条图片提示词：开头钩子、情绪转折、结尾。之后会在即梦“图片生成”里出图，再用图生视频（首帧）让它动起来。
+每条80字以内，写清：主体和它在画面里的位置、景别、唯一的光源、色彩；画幅${s.aspect}；画面中不要任何文字。
+${P ? '主角出现时，外观一字不改：' + P + '\n' : ''}${styleOf(s) ? '统一风格：' + styleOf(s) + '\n' : ''}视觉规则：
+${visualRules(s, true)}
+三张图之间要能看出变化：开头和结尾在构图或光线上互相呼应。
+最后为每张图各写一句图生视频的提示词，30字以内，只写动作、一种运镜和声音。`;
   }},
   G: {t:'卡片 G', sub:'标题和金句', where:'复制给文字AI', b: s =>
 `为这个短片起5个标题，每个不超过10个字；再写3句结尾金句，每句不超过15个字。
@@ -980,7 +1094,7 @@ function renderProgress() {
 /* ================= shots ================= */
 function shotParts(sh) {
   const subject = sh.useP ? tr(st.s.protagonist) : tr(sh.subject);
-  const style = sh.useS ? tr(st.s.style) : tr(sh.style);
+  const style = sh.useS ? styleOf(st.s) : tr(sh.style);
   return {subject, style};
 }
 function segRanges(sh) {
@@ -1018,7 +1132,7 @@ function composeShot(sh) {
   }
   let tail = [style, tr(sh.sound)].filter(Boolean).join('；');
   if (sh.noMusic && sh.audUse !== 'music') tail = tail ? tail.replace(/[，,；;。]+$/, '') + '，无配乐' : '无配乐';
-  if (sh.useS && !tr(st.s.style)) tail = '⟦统一风格（第3步）⟧' + (tail ? '；' + tail : '');
+  if (sh.useS && !styleOf(st.s)) tail = '⟦统一风格（第3步）⟧' + (tail ? '；' + tail : '');
   lines.push('【风格/音频】' + (tail || '⟦声音⟧'));
   return lines.join('\n');
 }
@@ -1030,6 +1144,12 @@ function shotLen(sh) {
 }
 function shotLimit(sh) { return is25() ? 100 * Math.max(1, Math.ceil(shotDur(sh) / 15)) : 100; }
 function camKinds(text) { return CAM.filter(([, re]) => re.test(text)).map(([n]) => n); }
+function scaleOf(sh) {
+  if (sh.tl) return '';
+  const t = sh.camera + ' ' + sh.action + ' ' + sh.scene;
+  const k = SCALES.find(x => t.indexOf(x) >= 0);
+  return k === '大特写' ? '特写' : (k || '');
+}
 function lintShot(sh) {
   const out = [];
   const v25 = is25(), mx = M().max;
@@ -1052,7 +1172,20 @@ function lintShot(sh) {
     const kinds = camKinds(sh.tl ? sh.camera + ' ' + actionText : sh.camera);
     if (kinds.length > 1) out.push(['bad', '可能写了两种运镜（' + kinds.join('、') + '），只留一种，或拆成两个镜头']);
   }
-  if (!sh.tl && /镜头|运镜|机位/.test(sh.action + sh.scene)) out.push(['warn', '动作或场景里提到了镜头，运镜只写在【运镜】里']);
+  if (!sh.tl && /运镜|机位|镜头\s*(缓慢|慢慢|快速|推|拉|摇|移|跟|环绕|绕|升|降|俯|仰)/.test(sh.action + sh.scene)) out.push(['warn', '动作或场景里提到了镜头，运镜只写在【运镜】里']);
+  // aesthetic rules
+  const allowed = st.s.cams || [];
+  const extra = camKinds(sh.tl ? sh.camera + ' ' + actionText : sh.camera).filter(k => allowed.indexOf(k) < 0 && CAM_NAMES[k]);
+  if (allowed.length && extra.length) {
+    const msg = '用了审美规则以外的运镜（' + extra.join('、') + '）';
+    if (sh.key === 'turn' || sh.key === 'end') out.push(['info', msg + '；这是' + KEYS[sh.key] + '镜头，可以作为全片唯一的例外']);
+    else out.push(['warn', msg + '；换成' + allowed.map(k => CAM_NAMES[k]).join('或') + '，或把这个镜头标为转折、结尾']);
+  }
+  const live = st.shots.filter(x => x.status !== 'drop');
+  const pos = live.indexOf(sh), sc0 = scaleOf(sh);
+  if (sc0 && pos >= 2 && scaleOf(live[pos - 1]) === sc0 && scaleOf(live[pos - 2]) === sc0) out.push(['warn', '连续3个镜头都是' + sc0 + '，换个景别，按远、近、特写交替']);
+  const glossy = all.match(/炫光|光晕|粒子特效|高饱和|鲜艳|梦幻|华丽|宏大/g);
+  if (glossy) out.push(['warn', '“' + Array.from(new Set(glossy)).join('、') + '”是典型的AI味写法，删掉，或换成一个具体的光源']);
   if (/拥抱|握手|打斗|打架|亲吻|接吻|搏斗|牵手|击掌|扭打|格斗|摔跤|交手|搀扶/.test(all)) out.push(['bad', '有多人肢体接触，容易穿模，改成单人或用背影、剪影回避']);
   const textCheck = all.replace(/无文字|不出现文字|没有文字|无字幕|不要文字|不生成文字|不要任何文字/g, '');
   if (/字幕|文字|标语|写着|标题|logo|招牌上|横幅/i.test(textCheck)) out.push(['bad', '要求画面里出现文字，容易乱码，文字放到剪辑里加']);
@@ -1063,10 +1196,12 @@ function lintShot(sh) {
   if (!v25 && d > 8 && !sh.tl) out.push(['warn', '超过8秒，建议打开“按时间轴写”']);
   if (v25 && d > 15 && !sh.tl) out.push(['warn', '超过15秒，建议打开“按镜头分段”，拆成2到4个镜头']);
   if (sh.tries >= 3 && sh.status !== 'ok') out.push(['bad', '已经试了' + sh.tries + '次，换个镜头设计，别死磕']);
-  const hasIssue = out.length > 0;
+  const hasIssue = out.some(x => x[0] !== 'info');
   if (sh.audUse) out.push(['info', '视频时长不能短于这段音频，否则会被截断' + (v25 ? '' : '；2.0 的音频单段不超过15秒') + '。带音频时用全能参考入口，不用首尾帧。']);
   if (sh.useP && tr(st.s.protagonist) && !sh.refImg) out.push(['info', '做好主角参考图后，勾上“主角图”，人物更稳']);
   if (sh.refImg && sh.refScene) out.push(['info', '在即梦按顺序上传：先主角图，再场景图']);
+  if (/正脸|脸部特写|面部特写|看向镜头|看着镜头|对着镜头|五官/.test(all)) out.push(['info', 'AI 最容易在脸上露馅；能用背影、剪影、局部或物件特写，就换掉正脸']);
+  if (sh.key) out.push(['info', KEYS[sh.key] + '关键帧：先用卡片 K 在图片生成里出图，再用首帧（图生视频）让它动；提示词重点写动作、运镜和声音']);
   if (!hasIssue) out.unshift(['good', '检查通过']);
   return out;
 }
@@ -1078,7 +1213,7 @@ function shotHtml(sh, i) {
   const tlLabel = v25 ? '按镜头分段' : '按时间轴写';
   return `<article class="shot" data-id="${sh.id}" data-status="${sh.status}" aria-label="${unit}${i + 1}">
   <div class="shot-head">
-    <span class="shot-no">${unit} ${i + 1}</span>
+    <span class="shot-no">${unit} ${i + 1}</span>${sh.key ? `<span class="keytag">${KEYS[sh.key]}</span>` : ''}
     <label class="dur"><input type="number" min="4" max="${M().max}" data-f="dur" value="${esc(d)}" aria-label="时长"${sh.tl ? ' disabled title="按各段秒数自动相加"' : ''}>秒</label>
     <select data-f="status" aria-label="状态">${STATUS.map(([v, n]) => `<option value="${v}"${sh.status === v ? ' selected' : ''}>${n}</option>`).join('')}</select>
     <span class="tries${sh.tries >= 3 ? ' hot' : ''}">已试 <b>${sh.tries}</b> 次 <button class="icon" type="button" data-act="try" title="生成一次就点一下">+1</button></span>
@@ -1111,7 +1246,7 @@ function shotHtml(sh, i) {
       <div class="field">
         <span class="lbl">风格 <label class="inline-check"><input type="checkbox" data-f="useS"${sh.useS ? ' checked' : ''}> 用统一风格</label></span>
         ${sh.useS
-          ? `<p class="small muted" style="margin:0" data-show="style">${tr(st.s.style) ? esc(st.s.style) : '第3步还没填统一风格'}</p>`
+          ? `<p class="small muted" style="margin:0" data-show="style">${styleOf(st.s) ? esc(styleOf(st.s)) : '第3步还没填统一风格'}</p>`
           : `<input type="text" data-f="style" list="styleList" value="${esc(sh.style)}" placeholder="例如：胶片质感，暖黄与冷蓝对比">`}
       </div>
       <div class="field">
@@ -1136,6 +1271,13 @@ function shotHtml(sh, i) {
             <option value=""${!sh.audUse ? ' selected' : ''}>不用</option>
             <option value="voice"${sh.audUse === 'voice' ? ' selected' : ''}>配音：对口型</option>
             <option value="music"${sh.audUse === 'music' ? ' selected' : ''}>背景音乐</option>
+          </select></label>
+        <label class="inline-check">关键帧
+          <select data-f="key" aria-label="是否关键帧">
+            <option value=""${!sh.key ? ' selected' : ''}>否</option>
+            <option value="hook"${sh.key === 'hook' ? ' selected' : ''}>开头钩子</option>
+            <option value="turn"${sh.key === 'turn' ? ' selected' : ''}>转折</option>
+            <option value="end"${sh.key === 'end' ? ' selected' : ''}>结尾</option>
           </select></label>
       </div>
     </div>
@@ -1265,8 +1407,9 @@ function exportText() {
     '选中的创意：' + (tr(s.idea) || '（未填）'),
     '一句话故事：' + (tr(s.story) || '（未填）'),
     '主角设定：' + (tr(s.protagonist) || '（未填）'),
-    '统一风格：' + (tr(s.style) || '（未填）'),
-    '主场景：' + (tr(s.scene) || '（未填）'), ''];
+    '统一风格：' + (styleOf(s) || '（未填）'),
+    '主场景：' + (tr(s.scene) || '（未填）'),
+    '审美规则：主色调 ' + (tr(s.palette) || '未定') + '；强调色 ' + (tr(s.accent) || '未定') + '；光线 ' + (tr(s.light) || '未定') + '；质感 ' + (tr(s.texture) || '未定') + '；运镜 ' + (camRule(s) || '未定'), ''];
   st.shots.forEach((sh, i) => {
     out.push(`${M().unit}${i + 1}（${shotDur(sh)}秒，${label[sh.status]}，试${sh.tries}次）`);
     out.push(toCopy(composeShot(sh)), '');
@@ -1375,8 +1518,10 @@ document.addEventListener('input', ev => {
     st.s[k] = el.value;
     $$(`[data-bind="${k}"]`).forEach(o => { if (o !== el && o.type !== 'radio') o.value = el.value; });
     save(); renderCards();
-    if (k === 'protagonist' || k === 'style') {
-      $$(`[data-show="${k}"]`).forEach(p => { p.textContent = tr(st.s[k]) || (k === 'protagonist' ? '第3步还没填主角设定' : '第3步还没填统一风格'); });
+    if (['protagonist', 'style', 'palette', 'light', 'texture'].indexOf(k) >= 0) {
+      $$('[data-show="protagonist"]').forEach(p => { p.textContent = tr(st.s.protagonist) || '第3步还没填主角设定'; });
+      $$('[data-show="style"]').forEach(p => { p.textContent = styleOf(st.s) || '第3步还没填统一风格'; });
+      $('[data-bind="style"]').placeholder = composeStyle(st.s) ? '留空时自动使用：' + composeStyle(st.s) : '留空时自动用上面的规则拼出来';
       st.shots.forEach(renderShotOut);
     }
     if (k === 'dur') renderTotals();
@@ -1391,7 +1536,9 @@ document.addEventListener('input', ev => {
   else if (f === 'segsec') { sh.segs[+el.dataset.k].sec = parseInt(el.value, 10) || 0; sh.dur = shotDur(sh); }
   else if (f === 'dur') sh.dur = parseInt(el.value, 10) || 0;
   else sh[f] = el.value;
-  save(); renderShotOut(sh);
+  save();
+  // neighbours' checks (shot-scale rhythm) depend on this shot too
+  if (f === 'camera' || f === 'action' || f === 'scene') st.shots.forEach(renderShotOut); else renderShotOut(sh);
   if (f === 'dur' || f === 'segsec') renderTotals();
 });
 document.addEventListener('change', ev => {
@@ -1403,6 +1550,13 @@ document.addEventListener('change', ev => {
   }
   if (el.dataset.check) {
     st.checks[el.dataset.check] = el.checked; save(); renderProgress();
+    return;
+  }
+  if (el.dataset.cam) {
+    const set = new Set(st.s.cams || []);
+    if (el.checked) set.add(el.dataset.cam); else set.delete(el.dataset.cam);
+    st.s.cams = CAM_ORDER.filter(k => set.has(k));
+    save(); renderCards(); st.shots.forEach(renderShotOut);
     return;
   }
   const f = el.dataset.f;
@@ -1425,7 +1579,8 @@ document.addEventListener('change', ev => {
     renderTotals();
     return;
   }
-  if (f === 'status') { sh.status = el.value; save(); renderShotOut(sh); renderTotals(); return; }
+  if (f === 'status') { sh.status = el.value; save(); st.shots.forEach(renderShotOut); renderTotals(); return; }
+  if (f === 'key') { sh.key = el.value; save(); rerenderShot(sh, '[data-f="key"]'); return; }
   if (f === 'vidUse' || f === 'audUse') { sh[f] = el.value; save(); renderShotOut(sh); return; }
   if (f === 'dur') {
     let d = parseInt(el.value, 10); if (!(d >= 4)) d = 4; if (d > M().max) d = M().max;
@@ -1514,6 +1669,15 @@ document.addEventListener('click', ev => {
       break;
     }
     case 'importClear': $('#importBox').value = ''; $('#importMsg').textContent = ''; break;
+    case 'makeStyle': {
+      const v = composeStyle(st.s);
+      if (!v) { t.textContent = '先填主色调、光线或质感'; setTimeout(() => { t.textContent = '用规则生成统一风格'; }, 1800); break; }
+      st.s.style = v; save(); renderBinds(); renderCards();
+      $$('[data-show="style"]').forEach(p => { p.textContent = v; });
+      st.shots.forEach(renderShotOut);
+      t.textContent = '已生成'; setTimeout(() => { t.textContent = '用规则生成统一风格'; }, 1500);
+      break;
+    }
     case 'copyExport': copyText(exportText(), t); break;
     case 'downloadExport': {
       try {
@@ -1542,8 +1706,13 @@ $('#soundOn').addEventListener('change', e => { st.sound = e.target.checked; sav
 $('#help').addEventListener('click', e => { if (e.target === e.currentTarget && e.currentTarget.close) e.currentTarget.close(); });
 
 /* ================= init ================= */
+function renderCams() {
+  const on = new Set(st.s.cams || []);
+  $('#camsBox').innerHTML = CAM_ORDER.map(k => `<label><input type="checkbox" data-cam="${k}"${on.has(k) ? ' checked' : ''}><span>${CAM_NAMES[k]}</span></label>`).join('');
+}
 function renderAll() {
-  renderTpls(); renderBinds(); renderCards(); renderChecks(); renderShots(); renderPhases();
+  renderTpls(); renderCams(); renderBinds(); renderCards(); renderChecks(); renderShots(); renderPhases();
+  $('[data-bind="style"]').placeholder = composeStyle(st.s) ? '留空时自动使用：' + composeStyle(st.s) : '留空时自动用上面的规则拼出来';
   $('#soundOn').checked = st.sound !== false;
   $('#fixes').innerHTML = FIXES.map(([a, b, c]) => `<div class="fix"><b>${esc(a)}</b><span class="sym">${esc(b)}</span><p class="act">${esc(c)}</p></div>`).join('');
   tick();
